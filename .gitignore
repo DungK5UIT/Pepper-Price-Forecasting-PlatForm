@@ -1,0 +1,46 @@
+# --- Java / Spring Boot (backend/) ---
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+HELP.md
+
+# --- Node / Next.js (frontend/) ---
+node_modules/
+.next/
+out/
+.turbo/
+next-env.d.ts
+
+# --- Python / FastAPI (ml-service/) ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Docker ---
+docker-compose.override.yml
+
+# --- IDE ---
+.idea/
+.vscode/
+*.iml
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log
