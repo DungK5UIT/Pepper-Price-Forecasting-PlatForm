@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { WeatherProvinceCard } from "@/components/WeatherProvinceCard";
-import { getProvinceWeather } from "@/lib/mock-data";
+import { getProvinceWeather } from "@/lib/api";
 import hillsBanner from "@/assets/images/hills-banner.jpg";
 
 export const metadata: Metadata = {
@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   description: "Dự báo 7 ngày nhiệt độ, lượng mưa và gió tại 6 tỉnh trồng tiêu trọng điểm Việt Nam.",
 };
 
-export default function WeatherPage() {
-  const provinces = getProvinceWeather();
+export default async function WeatherPage() {
+  const provinces = await getProvinceWeather();
 
   return (
     <>

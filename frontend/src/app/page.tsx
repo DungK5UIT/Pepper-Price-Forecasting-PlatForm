@@ -13,15 +13,17 @@ import {
   getProvinceWeather,
   getRegionPrices,
   getTodayPrice,
-} from "@/lib/mock-data";
+} from "@/lib/api";
 
-export default function DashboardPage() {
-  const today = getTodayPrice();
-  const series = getForecastSeries();
-  const stats = getPeriodStats();
-  const regions = getRegionPrices();
-  const provinces = getProvinceWeather();
-  const insight = getMarketInsight();
+export default async function DashboardPage() {
+  const [today, series, stats, regions, provinces, insight] = await Promise.all([
+    getTodayPrice(),
+    getForecastSeries(),
+    getPeriodStats(),
+    getRegionPrices(),
+    getProvinceWeather(),
+    getMarketInsight(),
+  ]);
 
   return (
     <>
