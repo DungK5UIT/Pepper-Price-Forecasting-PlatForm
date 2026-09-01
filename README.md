@@ -15,10 +15,14 @@ components now run:
 - **frontend/** — two pages (price dashboard, weather), rendering data
   fetched from the backend's API.
 - **backend/** — Spring Boot serving the public API contract in
-  [`docs/api/README.md`](docs/api/README.md) from in-memory stubs.
+  [`docs/api/README.md`](docs/api/README.md) from PostgreSQL, with the schema
+  owned by Flyway migrations.
+- **PostgreSQL** — hosted on Supabase; see
+  [`docs/database/README.md`](docs/database/README.md).
 
-Still absent: the database and its migrations, the ML service, auth, and
-any deployment.
+Still absent: the ML service, ingestion jobs, auth, and any deployment. The
+forecasts currently served were imported from an earlier prototype rather than
+generated here.
 
 ## Architecture at a Glance
 

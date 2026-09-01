@@ -11,12 +11,14 @@ from `D:\Claude\Software-Engineer-OS`) and apply here without restatement.
 
 ## Current Phase
 
-Phase 1 — first vertical slice. `frontend/` (Next.js, two pages) fetches
-everything from `backend/` (Spring Boot 4.1 + Java 21) over the contract
-in `docs/api/README.md`; the backend still answers from in-memory stubs in
-`service/stub/`, so the data is shaped correctly but not real.
+Phase 1 — first vertical slice, end to end on real data. `frontend/`
+(Next.js, two pages) fetches everything from `backend/` (Spring Boot 4.1 +
+Java 21) over the contract in `docs/api/README.md`, and the backend reads
+PostgreSQL on Supabase, with its schema owned by Flyway migrations in
+`backend/src/main/resources/db/migration/`.
 
-Not built yet: database and migrations, the ML service, auth, deployment.
+Not built yet: the ML service (forecasts currently come from data imported
+from an earlier prototype), ingestion jobs, auth, deployment.
 See `docs/architecture/` for system design and `docs/adr/` for recorded
 decisions.
 

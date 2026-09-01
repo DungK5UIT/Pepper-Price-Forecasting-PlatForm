@@ -11,13 +11,22 @@ is nothing to install beyond the two runtimes.
 | JDK | 21 | `backend/` (Maven itself not needed — the wrapper fetches it) |
 | Node.js | 20+ | `frontend/` |
 
+The database is hosted (Supabase), so there is nothing to install for it — only
+credentials to configure.
+
 ## Backend
+
+Needs database credentials — copy `backend/.env.example` to `backend/.env`
+and fill in the Supabase password (Project Settings → Database → Connection
+string → **Session pooler**). `.env` is git-ignored.
 
 ```bash
 cd backend
-./mvnw test              # unit + web-slice tests
+./mvnw test              # no credentials needed: tests run on in-memory H2
 ./mvnw spring-boot:run   # http://localhost:8080
 ```
+
+The first run applies the Flyway migrations.
 
 Smoke check: `curl http://localhost:8080/actuator/health` returns
 `{"status":"UP"}`. The API contract is in

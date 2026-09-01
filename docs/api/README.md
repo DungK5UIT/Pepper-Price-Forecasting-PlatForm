@@ -83,9 +83,13 @@ Weather per growing province: the current day first, then forecast days
 [{
   "province": "Đắk Lắk",
   "days": [{ "label": "Hôm nay", "condition": "cloud-rain",
-             "tempMin": 24, "tempMax": 31, "rainMm": 18.0, "isForecast": false }]
+             "tempC": 27.4, "rainMm": 18.0, "isForecast": false }]
 }]
 ```
+
+One temperature per day, not a min/max range — that is what the upstream
+source records. `condition` is derived from rainfall and wind, which are what
+the source actually provides.
 
 ### `GET /api/v1/market-insight`
 
@@ -101,7 +105,12 @@ Liveness for deployment tooling. Not part of the versioned contract.
 
 ## Data source
 
-These endpoints are currently served from in-memory stubs in the
-backend's `service/stub/` package — the shapes are final, the numbers are
-not. They start returning real data when the database is wired up, with
-no change to this contract.
+Served from PostgreSQL (`backend/src/main/java/.../service/db/`), reading the
+tables described in [`../database/README.md`](../database/README.md).
+
+Two consequences worth knowing when reading the responses:
+
+- `asOfDate` is the latest **observed** date, not today's date. Prices are
+  collected during the day, so the newest row is routinely yesterday's.
+- A change of `0` is common and real: pepper is quoted in 500–1000 VND steps
+  and often does not move day to day.

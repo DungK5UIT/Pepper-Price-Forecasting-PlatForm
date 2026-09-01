@@ -1,17 +1,19 @@
 # Database Migrations
 
-Versioned PostgreSQL schema migrations (Flyway or Liquibase — tool choice
-deferred until the first migration is actually written), tracked
-independently of application code so schema history is reviewable on its
-own.
+**The migrations live in `backend/src/main/resources/db/migration/`**, not in
+this directory.
 
-**Owns**: the schema definition and its evolution over time, applied by
-the Java backend at startup (or by CI, depending on the pipeline design
-chosen later).
+The tool choice is **Flyway**, and Flyway resolves migrations from the
+application classpath so they ship inside the backend's jar and run at startup.
+Keeping the SQL here instead would mean pointing Flyway at a filesystem path
+relative to the working directory — which breaks as soon as the backend runs as
+a packaged jar or in a container. The original intent, "schema history
+reviewable on its own", is served just as well by a dedicated directory inside
+the module that owns the schema.
 
-**Does not own**: conceptual domain modeling — that lives in
-`docs/architecture/domain-model.md` and should inform migrations here, not
-the other way around. Schema-level documentation derived from these
-migrations lives in `docs/database/`.
+**Owns**: nothing any more — this directory is kept as a signpost.
 
-Empty until the first entity from the domain model is implemented.
+Schema documentation derived from those migrations lives in
+[`../../docs/database/README.md`](../../docs/database/README.md); the
+conceptual model it implements is in
+[`../../docs/architecture/domain-model.md`](../../docs/architecture/domain-model.md).

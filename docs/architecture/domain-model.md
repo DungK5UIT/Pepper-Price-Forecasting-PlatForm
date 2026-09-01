@@ -17,6 +17,17 @@ A single raw price observation: commodity, market/region, date, price,
 unit, source. Immutable once ingested — corrections are new records, not
 edits, so history stays auditable. Owned by the Java backend.
 
+### WeatherObservation
+Temperature, rainfall and wind for one growing province on one day, flagged as
+observed or forecast. An input to price forecasting in its own right — heavy
+rain or drought moves yields — and shown directly to users. Owned by the Java
+backend.
+
+### MarketInsight
+Narrative commentary published for a given day, alongside the numbers.
+Generated upstream rather than derived here; the backend stores and serves it.
+Owned by the Java backend.
+
 ### DataIngestionRecord
 The execution record of one ingestion run: which source, when, row counts,
 success/failure. Append-only. Owned by the Java backend.
@@ -86,9 +97,9 @@ Authenticates through the Java backend. Owns future user-facing state
 
 ## Ownership Summary
 
-- **Java backend**: User, DataSource, MarketPrice, DataIngestionRecord,
-  Forecast, PredictionHistory, JobExecutionRecord — the durable,
-  business-facing state.
+- **Java backend**: User, DataSource, MarketPrice, WeatherObservation,
+  MarketInsight, DataIngestionRecord, Forecast, PredictionHistory,
+  JobExecutionRecord — the durable, business-facing state.
 - **Python ML service**: Feature/FeatureSet, ModelVersion,
   ModelEvaluationMetric — computation artifacts, exchanged with the
   backend via the internal API rather than persisted independently (see
