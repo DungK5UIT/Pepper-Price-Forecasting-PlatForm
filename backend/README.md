@@ -15,27 +15,30 @@ internal API rather than reimplemented here.
 
 ## Status
 
-Scaffolded: Spring Boot 4.1 (Maven wrapper, Java 21) serving the public
-API defined in [`docs/api/README.md`](../docs/api/README.md).
+Spring Boot 4.1 (Maven wrapper, Java 21) serving the public API defined in
+[`docs/api/README.md`](../docs/api/README.md) from PostgreSQL (Supabase).
 
-**No database yet.** The `service/stub/` implementations return in-memory
-data so the API contract and the frontend can be built against something
-real-shaped. They are the seam where persistence lands: the interfaces in
-`service/` stay, a JPA-backed implementation replaces the stubs, and
-neither the controllers nor the DTOs change.
+Schema and data both belong to this service: Flyway migrations in
+`src/main/resources/db/migration/` create the tables and imported the history
+an earlier prototype had already collected in the same database. See
+[`docs/database/README.md`](../docs/database/README.md).
 
 ## Running
 
-Requires Java 21 (`java -version`). Maven itself is not needed — the
-wrapper fetches it.
+Requires Java 21 (`java -version`) and database credentials. Maven itself is
+not needed — the wrapper fetches it.
 
 ```bash
-./mvnw test              # unit + web-slice tests
+cp .env.example .env     # then fill in SUPABASE_DB_PASSWORD
+./mvnw test              # no credentials needed: tests use in-memory H2
 ./mvnw spring-boot:run   # http://localhost:8080
 curl http://localhost:8080/actuator/health
 ```
 
 Use `mvnw.cmd` instead of `./mvnw` in PowerShell/cmd.
+
+On first run against a database that already contains other tables, Flyway
+baselines at version 0 and then applies V1 onwards.
 
 ## Layout
 
@@ -46,16 +49,24 @@ src/main/java/com/giatieuviet/backend/
   api/dto/       response records mirroring frontend/src/lib/types.ts
   api/error/     RFC 9457 problem responses, decided centrally
   domain/        Granularity, WeatherCondition — wire codes live here
+  persistence/   JPA entities and Spring Data repositories
   service/       interfaces the controllers depend on
-  service/stub/  TEMPORARY in-memory implementations (see Status)
+  service/db/    the implementations that read PostgreSQL
+src/main/resources/db/migration/   Flyway migrations
 ```
 
 ## Configuration
 
-| Property | Default | Purpose |
+| Property / variable | Default | Purpose |
 |---|---|---|
+| `SUPABASE_DB_URL` | — | JDBC URL, session pooler (port 5432) |
+| `SUPABASE_DB_USER` | — | Database user |
+| `SUPABASE_DB_PASSWORD` | — | Database password — from `.env`, never committed |
 | `app.cors.allowed-origins` | `http://localhost:3000` | Origins allowed to call `/api/**` |
 | `management.endpoints.web.exposure.include` | `health,info` | Exposed actuator endpoints |
+
+`.env` next to the pom is imported automatically when present, so deployments
+can inject the same variables from the environment instead.
 
 See [`docs/adr/0002-service-boundaries.md`](../docs/adr/0002-service-boundaries.md)
 and [`docs/adr/0003-ml-service-data-access.md`](../docs/adr/0003-ml-service-data-access.md)

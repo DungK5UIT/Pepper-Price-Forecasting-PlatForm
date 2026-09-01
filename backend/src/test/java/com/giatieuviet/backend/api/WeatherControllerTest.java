@@ -27,8 +27,8 @@ class WeatherControllerTest {
     void weatherReturnsDaysPerProvinceWithHyphenatedConditionCodes() {
         given(weatherService.provinceWeather()).willReturn(List.of(
                 new ProvinceWeatherResponse("Đắk Lắk", List.of(
-                        new WeatherDayResponse("Hôm nay", "cloud-rain", 24, 31, 18, false),
-                        new WeatherDayResponse("Th3", "cloud-sun", 23, 29, 24, true)))));
+                        new WeatherDayResponse("Hôm nay", "cloud-rain", 27.5, 18, false),
+                        new WeatherDayResponse("Th3", "cloud-sun", 26.0, 24, true)))));
 
         assertThat(mvc.get().uri("/api/v1/weather"))
                 .hasStatusOk()
@@ -40,8 +40,8 @@ class WeatherControllerTest {
     void weatherMarksForecastDays() {
         given(weatherService.provinceWeather()).willReturn(List.of(
                 new ProvinceWeatherResponse("Gia Lai", List.of(
-                        new WeatherDayResponse("Hôm nay", "sun", 24, 32, 8, false),
-                        new WeatherDayResponse("Th3", "cloud", 24, 31, 12, true)))));
+                        new WeatherDayResponse("Hôm nay", "sun", 28.0, 8, false),
+                        new WeatherDayResponse("Th3", "cloud", 27.0, 12, true)))));
 
         assertThat(mvc.get().uri("/api/v1/weather"))
                 .hasStatusOk()
