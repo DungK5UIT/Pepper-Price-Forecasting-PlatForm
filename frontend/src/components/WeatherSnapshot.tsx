@@ -50,7 +50,7 @@ export function WeatherSnapshot({ provinces }: { provinces: ProvinceWeather[] })
                   {p.province}
                 </span>
                 <span className="text-[13px] tabular-nums text-body">
-                  {todayInfo.tempMin}–{todayInfo.tempMax}°C ·{" "}
+                  {Math.round(todayInfo.tempC)}°C ·{" "}
                   <span className="text-rain">{todayInfo.rainMm}mm</span>
                 </span>
               </div>

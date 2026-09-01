@@ -20,6 +20,8 @@
   --color-card: #fffdf8;
   --color-positive: #2f7d4f;
   --color-negative: #b23b2e;
+  /* A fall on the dark hero card: the ink-on-cream red goes muddy there. */
+  --color-negative-on-dark: #f0a08a;
   --color-rain: #5b7c99;
 }
 
@@ -43,6 +45,7 @@
   --color-card: var(--color-card);
   --color-positive: var(--color-positive);
   --color-negative: var(--color-negative);
+  --color-negative-on-dark: var(--color-negative-on-dark);
   --color-rain: var(--color-rain);
 
   --font-display: var(--font-cormorant), Georgia, serif;

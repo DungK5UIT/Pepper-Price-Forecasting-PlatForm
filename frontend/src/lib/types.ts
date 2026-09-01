@@ -44,8 +44,8 @@ export type WeatherCondition = "sun" | "cloud" | "cloud-sun" | "cloud-rain" | "w
 export interface WeatherDay {
   label: string;
   condition: WeatherCondition;
-  tempMin: number;
-  tempMax: number;
+  /** One reading per day — the upstream source records a single temperature, not a range. */
+  tempC: number;
   rainMm: number;
   isForecast: boolean;
 }

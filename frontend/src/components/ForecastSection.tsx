@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import type { ForecastSeries, Granularity, PeriodStat } from "@/lib/types";
+import { deltaDirection, formatSignedPercent, formatSignedVnd } from "@/lib/format";
 import { ForecastChart } from "./ForecastChart";
-import { TriangleUpIcon } from "./icons";
+import { DeltaIcon } from "./icons";
 
 const GRANULARITY_LABEL: Record<Granularity, string> = {
   day: "Theo ngày",
@@ -12,15 +13,6 @@ const GRANULARITY_LABEL: Record<Granularity, string> = {
 };
 
 const GRANULARITIES: Granularity[] = ["day", "week", "month"];
-
-function formatVnd(value: number): string {
-  return value.toLocaleString("vi-VN");
-}
-
-function formatPercent(value: number): string {
-  const sign = value >= 0 ? "+" : "";
-  return `${sign}${value.toString().replace(".", ",")}%`;
-}
 
 export function ForecastSection({
   series,
@@ -82,19 +74,27 @@ export function ForecastSection({
       </div>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-        {stats.map((stat) => (
-          <div key={stat.label} className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card px-6 py-5.5">
-            <span className="text-xs font-medium uppercase tracking-[0.06em] text-muted">{stat.label}</span>
-            <div className="flex flex-wrap items-baseline gap-2.5">
-              <span className="font-display text-[26px] font-bold text-forest">
-                {formatPercent(stat.changePercent)}
-              </span>
-              <span className="flex items-center gap-1 text-[13px] font-bold text-positive">
-                <TriangleUpIcon />+{formatVnd(stat.changeVnd)} đ
-              </span>
+        {stats.map((stat) => {
+          const direction = deltaDirection(stat.changeVnd);
+          return (
+            <div key={stat.label} className="flex flex-col gap-2.5 rounded-2xl border border-border bg-card px-6 py-5.5">
+              <span className="text-xs font-medium uppercase tracking-[0.06em] text-muted">{stat.label}</span>
+              <div className="flex flex-wrap items-baseline gap-2.5">
+                <span className="font-display text-[26px] font-bold text-forest">
+                  {formatSignedPercent(stat.changePercent)}
+                </span>
+                <span
+                  className={`flex items-center gap-1 text-[13px] font-bold ${
+                    direction === "down" ? "text-negative" : direction === "up" ? "text-positive" : "text-muted"
+                  }`}
+                >
+                  <DeltaIcon direction={direction} />
+                  {formatSignedVnd(stat.changeVnd)} đ
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

@@ -1,5 +1,6 @@
 import type { SVGProps } from "react";
 import type { WeatherCondition } from "@/lib/types";
+import type { DeltaDirection } from "@/lib/format";
 
 export function TriangleUpIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -139,4 +140,15 @@ export function WeatherConditionIcon({
 }: { condition: WeatherCondition } & SVGProps<SVGSVGElement>) {
   const Icon = CONDITION_ICON[condition];
   return <Icon {...props} />;
+}
+
+/**
+ * Direction marker for a change. A flat change gets no arrow — an up arrow next
+ * to "0" reads as a rise that did not happen.
+ */
+export function DeltaIcon({ direction, ...props }: { direction: DeltaDirection } & SVGProps<SVGSVGElement>) {
+  if (direction === "flat") {
+    return null;
+  }
+  return direction === "up" ? <TriangleUpIcon {...props} /> : <TriangleDownIcon {...props} />;
 }

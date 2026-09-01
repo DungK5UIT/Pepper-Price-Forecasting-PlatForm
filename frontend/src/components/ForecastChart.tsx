@@ -135,7 +135,11 @@ export function ForecastChart({ points }: { points: PricePoint[] }) {
       )}
 
       {points.map((p, i) =>
-        i % labelEvery === 0 || p.isToday || i === points.length - 1 ? (
+        // "Hôm nay" always shows; its immediate neighbours are dropped so the
+        // two labels don't collide when the series has irregular gaps.
+        p.isToday ||
+        ((i % labelEvery === 0 || i === points.length - 1) &&
+          (todayIndex < 0 || Math.abs(i - todayIndex) > 1)) ? (
           <text
             key={i}
             x={xAt(i)}

@@ -1,12 +1,18 @@
 import Link from "next/link";
 import type { TodayPrice } from "@/lib/types";
-import { TriangleUpIcon } from "./icons";
+import { deltaDirection, formatSignedPercent, formatSignedVnd, formatVnd } from "@/lib/format";
+import { DeltaIcon } from "./icons";
 
-function formatVnd(value: number): string {
-  return value.toLocaleString("vi-VN");
-}
+/** Gold reads as a rise on the dark card; a fall needs its own tone there. */
+const DELTA_TONE = {
+  up: "bg-gold/18 text-gold",
+  down: "bg-negative-on-dark/18 text-negative-on-dark",
+  flat: "bg-cream-ink/12 text-cream-ink/80",
+} as const;
 
 export function HeroSection({ today }: { today: TodayPrice }) {
+  const direction = deltaDirection(today.changeVnd);
+
   return (
     <section className="relative grid grid-cols-1 items-center gap-14 overflow-hidden border-b border-forest/15 px-16 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:py-18">
       <div
@@ -52,10 +58,13 @@ export function HeroSection({ today }: { today: TodayPrice }) {
           </span>
           <span className="pb-2.5 text-lg font-medium text-[#cfe0c6]">đ/kg</span>
         </div>
-        <span className="flex w-fit items-center gap-1.5 rounded-full bg-gold/18 px-3.5 py-2 text-[13px] font-bold text-gold">
-          <TriangleUpIcon />
-          +{formatVnd(today.changeVnd)} đ (+{today.changePercent.toString().replace(".", ",")}%) so
-          với hôm qua
+        <span
+          className={`flex w-fit items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-bold ${DELTA_TONE[direction]}`}
+        >
+          <DeltaIcon direction={direction} />
+          {direction === "flat"
+            ? "Không đổi so với hôm qua"
+            : `${formatSignedVnd(today.changeVnd)} đ (${formatSignedPercent(today.changePercent)}) so với hôm qua`}
         </span>
         <div className="h-px bg-cream-ink/15" />
         <p className="text-sm leading-[1.65] text-[#cfe0c6]">

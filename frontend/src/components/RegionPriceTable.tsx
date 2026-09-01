@@ -1,9 +1,6 @@
 import type { RegionPrice } from "@/lib/types";
-import { LeafIcon, TriangleDownIcon, TriangleUpIcon } from "./icons";
-
-function formatVnd(value: number): string {
-  return value.toLocaleString("vi-VN");
-}
+import { deltaDirection, formatSignedVnd, formatVnd } from "@/lib/format";
+import { DeltaIcon, LeafIcon } from "./icons";
 
 function HillsBanner() {
   return (
@@ -34,7 +31,7 @@ export function RegionPriceTable({ regions }: { regions: RegionPrice[] }) {
         </div>
         <div className="flex flex-col">
           {regions.map((region, i) => {
-            const isDown = region.changeVnd < 0;
+            const direction = deltaDirection(region.changeVnd);
             return (
               <div
                 key={region.region}
@@ -55,12 +52,11 @@ export function RegionPriceTable({ regions }: { regions: RegionPrice[] }) {
                 <span
                   className={
                     "flex items-center justify-self-end gap-1 text-[13px] font-bold " +
-                    (isDown ? "text-negative" : "text-positive")
+                    (direction === "down" ? "text-negative" : direction === "up" ? "text-positive" : "text-muted")
                   }
                 >
-                  {isDown ? <TriangleDownIcon /> : <TriangleUpIcon />}
-                  {isDown ? "" : "+"}
-                  {formatVnd(region.changeVnd)}
+                  <DeltaIcon direction={direction} />
+                  {formatSignedVnd(region.changeVnd)}
                 </span>
               </div>
             );

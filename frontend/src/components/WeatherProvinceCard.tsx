@@ -33,7 +33,7 @@ export function WeatherProvinceCard({ weather }: { weather: ProvinceWeather }) {
           </div>
           <div className="flex items-center gap-2">
             <WeatherConditionIcon condition={today.condition} width={26} height={26} className="text-forest" />
-            <span className="font-display text-[26px] font-semibold text-forest">{today.tempMax}°C</span>
+            <span className="font-display text-[26px] font-semibold text-forest">{Math.round(today.tempC)}°C</span>
           </div>
         </div>
         <div className="h-px bg-cream-alt" />
@@ -46,7 +46,7 @@ export function WeatherProvinceCard({ weather }: { weather: ProvinceWeather }) {
               <span className="text-xs font-bold text-forest">{day.label}</span>
               <WeatherConditionIcon condition={day.condition} width={18} height={18} className="text-body" />
               <span className="text-xs text-body">
-                {day.tempMin}–{day.tempMax}°C
+                {Math.round(day.tempC)}°C
               </span>
               <span className="justify-self-end text-xs text-rain">{day.rainMm}mm</span>
               {day.isForecast ? (
