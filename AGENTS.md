@@ -11,11 +11,10 @@ from `D:\Codex\Software-Engineer-OS`) and apply here without restatement.
 
 ## Current Phase
 
-Phase 1 — first vertical slice. Two components run, both on stub data:
-`frontend/` (Next.js, two pages, mock data in `src/lib/mock-data.ts`) and
-`backend/` (Spring Boot 4.1 + Java 21, serving the contract in
-`docs/api/README.md` from in-memory stubs in `service/stub/`). The
-frontend does not call the backend yet.
+Phase 1 — first vertical slice. `frontend/` (Next.js, two pages) fetches
+everything from `backend/` (Spring Boot 4.1 + Java 21) over the contract
+in `docs/api/README.md`; the backend still answers from in-memory stubs in
+`service/stub/`, so the data is shaped correctly but not real.
 
 Not built yet: database and migrations, the ML service, auth, deployment.
 See `docs/architecture/` for system design and `docs/adr/` for recorded

@@ -35,16 +35,23 @@ npm run build
 npm run lint
 ```
 
-The frontend currently renders its own mock data
-(`frontend/src/lib/mock-data.ts`) and does not call the backend yet, so
-the two can be run independently. When they are wired together, the
-backend already allows `http://localhost:3000` as a CORS origin
-(`app.cors.allowed-origins`).
+The frontend reads everything from the backend (`src/lib/api.ts`), so
+**the backend must be running** or pages fall back to their error state —
+including during `npm run build`, which prerenders them.
+
+Point it at a different backend with `API_BASE_URL` (see
+`frontend/.env.example`); it defaults to `http://localhost:8080`.
 
 ## Running both
 
-Two terminals, one per component — there is no orchestration
-(`infra/docker/`) yet, because nothing needs to be composed together
+Two terminals, backend first:
+
+```bash
+cd backend  && ./mvnw spring-boot:run   # terminal 1
+cd frontend && npm run dev              # terminal 2
+```
+
+There is no orchestration (`infra/docker/`) yet — nothing needs composing
 until a database is introduced.
 
 ## Not applicable yet

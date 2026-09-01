@@ -12,13 +12,13 @@ and defensible technical decisions.
 boundaries, and architecture decisions from Phase 0 are in place. Two
 components now run:
 
-- **frontend/** — two pages (price dashboard, weather) rendering local
-  mock data.
+- **frontend/** — two pages (price dashboard, weather), rendering data
+  fetched from the backend's API.
 - **backend/** — Spring Boot serving the public API contract in
   [`docs/api/README.md`](docs/api/README.md) from in-memory stubs.
 
 Still absent: the database and its migrations, the ML service, auth, and
-any deployment. The frontend does not call the backend yet.
+any deployment.
 
 ## Architecture at a Glance
 
