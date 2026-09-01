@@ -35,6 +35,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
+		<!-- RestClient's auto-configuration is a separate module in Spring Boot 4;
+		     the webmvc starter alone provides no RestClient.Builder bean. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-restclient</artifactId>
+		</dependency>
 		<!-- The starter, not flyway-core on its own: Spring Boot 4 keeps Flyway's
 		     auto-configuration in this module, so plain flyway-core is on the
 		     classpath but never runs. -->

@@ -50,6 +50,19 @@ public class Forecast {
         // for JPA
     }
 
+    public Forecast(String commodity, String granularity, LocalDate asOfDate, LocalDate targetDate,
+            BigDecimal predictedPriceQ10, BigDecimal predictedPriceQ50, BigDecimal predictedPriceQ90,
+            String modelVersion) {
+        this.commodity = commodity;
+        this.granularity = granularity;
+        this.asOfDate = asOfDate;
+        this.targetDate = targetDate;
+        this.predictedPriceQ10 = predictedPriceQ10;
+        this.predictedPriceQ50 = predictedPriceQ50;
+        this.predictedPriceQ90 = predictedPriceQ90;
+        this.modelVersion = modelVersion;
+    }
+
     public Long getId() {
         return id;
     }

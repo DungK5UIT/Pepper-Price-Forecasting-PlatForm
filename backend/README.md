@@ -49,6 +49,8 @@ src/main/java/com/giatieuviet/backend/
   api/dto/       response records mirroring frontend/src/lib/types.ts
   api/error/     RFC 9457 problem responses, decided centrally
   domain/        Granularity, WeatherCondition — wire codes live here
+  forecast/      calls the ML service and stores the run it returns
+  internal/      endpoints for the ML service, not the public contract
   persistence/   JPA entities and Spring Data repositories
   service/       interfaces the controllers depend on
   service/db/    the implementations that read PostgreSQL
@@ -62,6 +64,9 @@ src/main/resources/db/migration/   Flyway migrations
 | `SUPABASE_DB_URL` | — | JDBC URL, session pooler (port 5432) |
 | `SUPABASE_DB_USER` | — | Database user |
 | `SUPABASE_DB_PASSWORD` | — | Database password — from `.env`, never committed |
+| `app.ml-service.base-url` | `http://localhost:8000` | Where the ML service listens |
+| `app.forecast.refresh-cron` | `0 15 8 * * *` | When forecasts are regenerated |
+| `app.forecast.refresh-on-startup` | `false` | Regenerate once at boot, for local runs |
 | `app.cors.allowed-origins` | `http://localhost:3000` | Origins allowed to call `/api/**` |
 | `management.endpoints.web.exposure.include` | `health,info` | Exposed actuator endpoints |
 

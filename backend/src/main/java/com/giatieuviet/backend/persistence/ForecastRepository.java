@@ -12,4 +12,7 @@ public interface ForecastRepository extends JpaRepository<Forecast, Long> {
     Optional<Forecast> findFirstByGranularityOrderByAsOfDateDesc(String granularity);
 
     List<Forecast> findByGranularityAndAsOfDateOrderByTargetDateAsc(String granularity, LocalDate asOfDate);
+
+    /** Clears a run so it can be replaced rather than duplicated when regenerated. */
+    void deleteByCommodityAndGranularityAndAsOfDate(String commodity, String granularity, LocalDate asOfDate);
 }
