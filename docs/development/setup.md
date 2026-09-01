@@ -10,6 +10,7 @@ is nothing to install beyond the two runtimes.
 |---|---|---|
 | JDK | 21 | `backend/` (Maven itself not needed — the wrapper fetches it) |
 | Node.js | 20+ | `frontend/` |
+| Python | 3.13 | `ml-service/` |
 
 The database is hosted (Supabase), so there is nothing to install for it — only
 credentials to configure.
@@ -51,17 +52,34 @@ including during `npm run build`, which prerenders them.
 Point it at a different backend with `API_BASE_URL` (see
 `frontend/.env.example`); it defaults to `http://localhost:8080`.
 
-## Running both
-
-Two terminals, backend first:
+## ML service
 
 ```bash
-cd backend  && ./mvnw spring-boot:run   # terminal 1
-cd frontend && npm run dev              # terminal 2
+cd ml-service
+pip install -r requirements-dev.txt
+pytest                                            # no credentials needed
+python -m uvicorn ml_service.main:app --port 8000
 ```
 
-There is no orchestration (`infra/docker/`) yet — nothing needs composing
-until a database is introduced.
+Retraining needs the backend up, since that is where training data comes from:
+`python -m ml_service.train`. See [`../../ml-service/README.md`](../../ml-service/README.md).
+
+## Running everything
+
+Three terminals. The frontend needs the backend; the backend only needs the ML
+service when it refreshes forecasts, and keeps serving the stored run if it is
+down.
+
+```bash
+cd backend    && ./mvnw spring-boot:run                        # terminal 1
+cd ml-service && python -m uvicorn ml_service.main:app --port 8000   # terminal 2
+cd frontend   && npm run dev                                   # terminal 3
+```
+
+To regenerate forecasts immediately instead of waiting for the daily schedule:
+`./mvnw spring-boot:run -Dspring-boot.run.arguments=--app.forecast.refresh-on-startup=true`.
+
+There is no orchestration (`infra/docker/`) yet.
 
 ## Not applicable yet
 
