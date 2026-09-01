@@ -11,9 +11,15 @@ from `D:\Codex\Software-Engineer-OS`) and apply here without restatement.
 
 ## Current Phase
 
-Phase 0 — foundation only. Repository structure and initial ADRs exist; no
-application code, schema, or deployment yet. See `docs/architecture/` for
-system design and `docs/adr/` for recorded decisions.
+Phase 1 — first vertical slice. Two components run, both on stub data:
+`frontend/` (Next.js, two pages, mock data in `src/lib/mock-data.ts`) and
+`backend/` (Spring Boot 4.1 + Java 21, serving the contract in
+`docs/api/README.md` from in-memory stubs in `service/stub/`). The
+frontend does not call the backend yet.
+
+Not built yet: database and migrations, the ML service, auth, deployment.
+See `docs/architecture/` for system design and `docs/adr/` for recorded
+decisions.
 
 ## Stack Direction
 
