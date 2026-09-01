@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+:root {
+  --color-cream: #f6f0e4;
+  --color-cream-alt: #eee6d7;
+  --color-border: #e4d9c4;
+  --color-forest: #173a2d;
+  --color-forest-deep: #0e2019;
+  --color-cream-ink: #fffaf1;
+  --color-body: #37584b;
+  --color-muted: #6b8577;
+  --color-overline: #2c5948;
+  --color-orange: #d9572f;
+  --color-orange-hover: #b8461f;
+  --color-orange-bright: #e36b3d;
+  --color-gold: #f5cf70;
+  --color-blob-sage: #d9e3bf;
+  --color-blob-apricot: #efb06d;
+  --color-badge-bg: #e9efd9;
+  --color-card: #fffdf8;
+  --color-positive: #2f7d4f;
+  --color-negative: #b23b2e;
+  --color-rain: #5b7c99;
+}
+
+@theme inline {
+  --color-cream: var(--color-cream);
+  --color-cream-alt: var(--color-cream-alt);
+  --color-border: var(--color-border);
+  --color-forest: var(--color-forest);
+  --color-forest-deep: var(--color-forest-deep);
+  --color-cream-ink: var(--color-cream-ink);
+  --color-body: var(--color-body);
+  --color-muted: var(--color-muted);
+  --color-overline: var(--color-overline);
+  --color-orange: var(--color-orange);
+  --color-orange-hover: var(--color-orange-hover);
+  --color-orange-bright: var(--color-orange-bright);
+  --color-gold: var(--color-gold);
+  --color-blob-sage: var(--color-blob-sage);
+  --color-blob-apricot: var(--color-blob-apricot);
+  --color-badge-bg: var(--color-badge-bg);
+  --color-card: var(--color-card);
+  --color-positive: var(--color-positive);
+  --color-negative: var(--color-negative);
+  --color-rain: var(--color-rain);
+
+  --font-display: var(--font-cormorant), Georgia, serif;
+  --font-sans: var(--font-be-vietnam-pro), system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-forest);
+  font-family: var(--font-sans);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  padding: 15px 26px;
+  transition: opacity 0.15s ease;
+}
+
+.pill-btn:hover {
+  opacity: 0.9;
+}
+
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='120'%20height='120'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.85'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23n)'/%3E%3C/svg%3E");
+}
