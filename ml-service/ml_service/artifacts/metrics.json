@@ -1,0 +1,45 @@
+{
+  "trainedAt": "2026-09-01T10:20:06+00:00",
+  "modelVersion": "naive-2026-09-01",
+  "selectedStrategy": "naive",
+  "features": [
+    "dlogP_lag_1",
+    "dlogP_lag_2",
+    "dlogP_lag_3",
+    "sin_m",
+    "cos_m"
+  ],
+  "monthlyPoints": 44,
+  "historyRange": {
+    "from": "2023-01-01",
+    "to": "2026-08-01"
+  },
+  "trainingRows": {
+    "horizon1": 39,
+    "horizon2": 38
+  },
+  "backtest": {
+    "gbm": {
+      "scoredPredictions": 61,
+      "pinballVnd": {
+        "q10": 2022.6,
+        "q50": 4861.2,
+        "q90": 3063.5
+      },
+      "meanPinballVnd": 3315.8,
+      "medianAbsoluteErrorVnd": 9722.5,
+      "bandCoverage": 0.705
+    },
+    "naive": {
+      "scoredPredictions": 61,
+      "pinballVnd": {
+        "q10": 1716.5,
+        "q50": 3565.4,
+        "q90": 3351.9
+      },
+      "meanPinballVnd": 2877.9,
+      "medianAbsoluteErrorVnd": 7130.8,
+      "bandCoverage": 0.869
+    }
+  }
+}

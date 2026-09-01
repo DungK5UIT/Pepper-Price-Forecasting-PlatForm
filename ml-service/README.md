@@ -12,6 +12,74 @@ API surface exposed to the frontend. Has no direct PostgreSQL access — see
 `docs/adr/0003-ml-service-data-access.md` for why, and the open question
 it leaves for revisiting if training-data throughput ever requires it.
 
-Not yet scaffolded. Will be initialized with FastAPI plus
-pandas/NumPy/scikit-learn (TensorFlow/PyTorch only if a specific model
-justifies it) when ML work actually begins.
+## Status
+
+Running. The model design is ported from the earlier prototype: quantile
+gradient boosting on a cumulative log-return target over monthly horizons, with
+daily and weekly points interpolated from the monthly median. The feature set
+is reduced to what the backend can supply, and every training run scores the
+model against a naive baseline and keeps whichever is better — see
+[`docs/adr/0004-forecasting-model.md`](../docs/adr/0004-forecasting-model.md).
+
+**The baseline currently wins**, so what ships is the random walk: the median
+stays at the latest observed price and the band widens with time. That is the
+honest reading of 44 monthly data points, not a placeholder.
+
+## Running
+
+```bash
+python -m venv .venv && .venv/Scripts/activate   # or source .venv/bin/activate
+pip install -r requirements-dev.txt
+
+pytest                                            # no network, no credentials
+python -m uvicorn ml_service.main:app --port 8000
+curl http://localhost:8000/health
+```
+
+`/health` reports which model version is loaded, so a stale artifact is visible
+without digging.
+
+## Training
+
+Training data comes from the backend, which must be running (ADR-0003):
+
+```bash
+python -m ml_service.train --backend-url http://localhost:8080
+```
+
+Writes `ml_service/artifacts/forecast_model.joblib` and
+`ml_service/artifacts/metrics.json`. Both are committed so a fresh clone can
+serve forecasts without database access.
+
+`metrics.json` holds the walk-forward scores for both strategies, which
+strategy was selected, and how much history it was trained on.
+
+## Internal API
+
+`POST /internal/v1/forecast` — called by the backend, never by a browser.
+
+```json
+{ "asOfDate": "2026-09-01", "anchorPrice": 135700,
+  "history": [{ "date": "2023-01-01", "priceVnd": 58700 }],
+  "horizonMonths": 2 }
+```
+
+Responds with `modelVersion`, `strategy`, and `points` keyed `month` / `week` /
+`day`, each point `{ targetDate, q10, q50, q90, interpolated }`.
+
+The `history` is used twice: monthly averages build the features, and the daily
+portion measures the volatility that sets the band width. Points marked
+`interpolated` are derived from the monthly median, not predicted.
+
+## Layout
+
+```
+ml_service/
+  main.py         FastAPI app
+  schemas.py      request/response models
+  features.py     monthly feature frame
+  model.py        the two strategies, training and prediction
+  interpolate.py  monthly median → day and week points
+  train.py        training CLI: fetch, train, backtest, write artifacts
+  artifacts/      committed model + metrics
+```
