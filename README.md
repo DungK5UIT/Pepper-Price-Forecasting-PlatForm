@@ -8,9 +8,17 @@ and defensible technical decisions.
 
 ## Status
 
-**Phase 0 — Foundation.** The repository structure, component boundaries,
-and initial architecture decisions are in place. No application code,
-schema, or deployment exists yet.
+**Phase 1 — First vertical slice.** The repository structure, component
+boundaries, and architecture decisions from Phase 0 are in place. Two
+components now run:
+
+- **frontend/** — two pages (price dashboard, weather) rendering local
+  mock data.
+- **backend/** — Spring Boot serving the public API contract in
+  [`docs/api/README.md`](docs/api/README.md) from in-memory stubs.
+
+Still absent: the database and its migrations, the ML service, auth, and
+any deployment. The frontend does not call the backend yet.
 
 ## Architecture at a Glance
 
@@ -37,9 +45,10 @@ Architecture decisions are recorded in [`docs/adr/`](docs/adr/).
 
 ## Development Setup
 
-Not yet applicable — no service has code to run. See
-[`docs/development/setup.md`](docs/development/setup.md), which will be
-filled in as each component is scaffolded.
+Backend: `cd backend && ./mvnw spring-boot:run` (JDK 21).
+Frontend: `cd frontend && npm install && npm run dev` (Node 20+).
+
+Full detail, including tests: [`docs/development/setup.md`](docs/development/setup.md).
 
 ## Documentation
 
