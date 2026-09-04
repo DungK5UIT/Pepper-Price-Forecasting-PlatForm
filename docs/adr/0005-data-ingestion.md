@@ -75,8 +75,15 @@ run is recorded as failed, and the site stays up.
   its layout the parser raises rather than returning nothing, so the failure is
   loud; the saved fixtures under `backend/src/test/resources/ingest/` are a
   place to reproduce a break, not a monitor that catches one.
-- Nothing watches `ingestion_run` yet. It records the evidence; reading it is
-  still manual, and alerting on it is open work.
+- `ingestion_run` is read by a health indicator exposed at
+  `/actuator/health` under `ingestion`, which reports `STALE` when a job has
+  not succeeded within `app.ingest.staleness-threshold` (26 hours). It
+  deliberately does not report `DOWN`: the process is healthy and restarting
+  it collects nothing. That means the endpoint keeps returning 200 and a
+  monitor has to read the body — pointing an uptime check at the status code
+  alone will not catch this.
+- Nothing yet *sends* that alarm anywhere. Something still has to poll the
+  endpoint; that is open work.
 - `robots.txt` for both price sources was re-verified on 2026-09-04: neither
   disallows `/gia-tieu-hom-nay/`, neither sets a crawl delay, and the job reads
   one page a day from each. This has to be re-checked, not assumed, if the

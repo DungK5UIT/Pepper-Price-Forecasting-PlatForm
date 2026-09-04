@@ -74,11 +74,18 @@ src/main/resources/db/migration/   Flyway migrations
 | `app.ingest.price.cron` | `0 0 7 * * *` | When prices are collected |
 | `app.ingest.weather.cron` | `0 10 7 * * *` | When weather is collected |
 | `app.ingest.run-on-startup` | `false` | Collect once at boot, for local runs |
+| `app.ingest.staleness-threshold` | `PT26H` | How long a job may go quiet before health reports `STALE` |
 | `app.ml-service.base-url` | `http://localhost:8000` | Where the ML service listens |
 | `app.forecast.refresh-cron` | `0 15 8 * * *` | When forecasts are regenerated |
 | `app.forecast.refresh-on-startup` | `false` | Regenerate once at boot, for local runs |
 | `app.cors.allowed-origins` | `http://localhost:3000` | Origins allowed to call `/api/**` |
 | `management.endpoints.web.exposure.include` | `health,info` | Exposed actuator endpoints |
+
+`GET /actuator/health` reports an `ingestion` component alongside the usual
+database and disk checks: when a collection job has not succeeded within the
+staleness threshold the aggregate status becomes `STALE`. It stays HTTP 200
+on purpose — the process is fine, its data is not — so a check has to read the
+body rather than the status code.
 
 `.env` next to the pom is imported automatically when present, so deployments
 can inject the same variables from the environment instead.

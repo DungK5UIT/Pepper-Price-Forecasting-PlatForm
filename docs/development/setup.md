@@ -101,8 +101,16 @@ The backend runs these on its own once it is up, all times local:
 | 07:10 | `weather_ingestion` | Reads Open-Meteo for the six growing provinces |
 | 08:15 | forecast refresh | Calls the ML service and stores the run |
 
-Every collection attempt lands in `ingestion_run` with a status and a detail;
-that table is the first place to look when the numbers stop moving. See
+Every collection attempt lands in `ingestion_run` with a status and a detail.
+You do not have to query it by hand:
+
+```bash
+curl -s http://localhost:8080/actuator/health | jq .components.ingestion
+```
+
+reports `fresh` or `stale` per job, with the last successful run. The
+aggregate status turns `STALE` — still HTTP 200, since the service itself is
+healthy — when a job has been quiet for more than 26 hours. See
 [`../adr/0005-data-ingestion.md`](../adr/0005-data-ingestion.md).
 
 ## Not applicable yet
