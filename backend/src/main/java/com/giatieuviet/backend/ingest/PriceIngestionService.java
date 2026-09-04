@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +55,13 @@ public class PriceIngestionService {
      * Off by default. A process started at noon would otherwise collect
      * nothing until the next morning, losing the day entirely — but a boot
      * should not depend on two public websites being up, so it is opt-in.
+     *
+     * Ordered so a local run reproduces the morning's real sequence: prices,
+     * then weather, then the forecast that reads them. The crons already
+     * space these out; {@code ApplicationReadyEvent} listeners have no
+     * inherent order.
      */
+    @Order(1)
     @EventListener(ApplicationReadyEvent.class)
     public void ingestOnStartupIfEnabled() {
         if (ingestOnStartup) {
