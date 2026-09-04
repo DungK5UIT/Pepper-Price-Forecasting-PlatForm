@@ -14,7 +14,8 @@ and defensible technical decisions.
   fetched from the backend's API.
 - **backend/** — Spring Boot serving the public API contract in
   [`docs/api/README.md`](docs/api/README.md) from PostgreSQL, with the schema
-  owned by Flyway migrations, and orchestrating forecast generation.
+  owned by Flyway migrations. It also collects the daily prices and weather
+  everything else is derived from, and orchestrates forecast generation.
 - **ml-service/** — FastAPI, generating the forecasts the backend stores. The
   model is honest about its size: it is scored against a naive baseline every
   training run, and the baseline currently wins
@@ -22,9 +23,12 @@ and defensible technical decisions.
 - **PostgreSQL** — hosted on Supabase; see
   [`docs/database/README.md`](docs/database/README.md).
 
-Still absent: ingestion jobs — prices and weather are whatever an earlier
-prototype collected, and nothing here refreshes them yet — plus auth and
-deployment.
+Prices and weather now arrive on their own: the backend collects both each
+morning ahead of the forecast refresh, and logs every attempt
+([ADR-0005](docs/adr/0005-data-ingestion.md)).
+
+Still absent: auth, deployment, and anything that watches the collection log
+and complains when a run fails.
 
 ## Architecture at a Glance
 

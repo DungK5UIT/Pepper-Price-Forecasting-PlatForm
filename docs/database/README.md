@@ -11,14 +11,27 @@ Migrations are Flyway SQL files in
 
 | Table | Holds | Notes |
 |---|---|---|
-| `market_price` | One observed price per region per day | Append-only. `region = 'national'` is the headline series; the others are the regional breakdown. Unique on (commodity, region, observed_date, source). |
+| `market_price` | One observed price per region per day | `region = 'national'` is the headline series (the mean of the others); the rest are the regional breakdown. Unique on (commodity, region, observed_date) — `source` is provenance, not identity, so a later run of the day corrects the row. |
 | `weather_observation` | Temperature, rainfall and wind per province per day | `is_forecast` separates predicted days from observed ones. Unique on (province, observed_date). |
 | `forecast` | One row per predicted point | Median plus a q10–q90 band, tagged with the `granularity` it was produced at and the `as_of_date` of the run. Unique on (commodity, granularity, as_of_date, target_date). |
 | `market_insight` | The narrative commentary for a day | One row per `as_of_date`. |
+| `ingestion_run` | One row per collection attempt | `status` is `success`, `partial` or `failed`; `detail` carries the failover reason, the disagreement between price sources, or the exception. The first place to look when the numbers stop moving. |
 
-Row Level Security is enabled on all four with no policies. Only the backend
+Row Level Security is enabled on all five with no policies. Only the backend
 reaches them, over a direct connection as their owner (owners are exempt from
 RLS), so the effect is to deny Supabase's `anon`/`authenticated` roles.
+
+## Where the data comes from
+
+`market_price` and `weather_observation` are filled each morning by the
+backend's own collection jobs — two public price sites and Open-Meteo — see
+[`../adr/0005-data-ingestion.md`](../adr/0005-data-ingestion.md). Rows dated
+before 2026-09-04, and every row with a `source` of
+`historical_backfill_2026-08_interpolated`, came from the earlier prototype by
+way of `V2`.
+
+`forecast` is written by the refresh that calls the ML service;
+`market_insight` is still prototype data, with nothing generating it yet.
 
 ## Hosting
 

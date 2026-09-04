@@ -45,6 +45,11 @@ Spring Boot. The system of record and orchestrator:
 - Owns authentication/authorization.
 - Persists users, market prices, data source config, ingestion records,
   forecasts, and job execution records.
+- Collects the raw data on a daily schedule: prices scraped from two
+  public sites, weather read from Open-Meteo, each attempt recorded in
+  `ingestion_run` (ADR-0005). Collection lives here rather than in the ML
+  service because the ML service has no database access, so a collector
+  there would have to write back through this one anyway.
 - Calls the ML service's internal API when a forecast needs to be
   generated or a model needs to be trained/evaluated, and persists the
   results it gets back.
@@ -58,8 +63,9 @@ FastAPI. A stateless computation service from the platform's perspective:
 - Does not persist platform state on its own and is never called directly
   by the frontend.
 
-See ADR-0002 for why the boundary is drawn this way, and ADR-0003 for why
-the ML service does not get direct database access.
+See ADR-0002 for why the boundary is drawn this way, ADR-0003 for why the
+ML service does not get direct database access, and ADR-0005 for why
+collection sits on the Java side of that line.
 
 ### PostgreSQL
 Single relational store, owned exclusively by the Java backend. All schema

@@ -1,8 +1,8 @@
 # Development Setup
 
-Two components run today: the backend (Spring Boot) and the frontend
-(Next.js). Neither needs a database yet — both serve stub data — so there
-is nothing to install beyond the two runtimes.
+Three components run today: the backend (Spring Boot), the frontend
+(Next.js), and the ML service (FastAPI). The backend needs database
+credentials; the other two need nothing beyond their runtime.
 
 ## Prerequisites
 
@@ -27,7 +27,8 @@ cd backend
 ./mvnw spring-boot:run   # http://localhost:8080
 ```
 
-The first run applies the Flyway migrations.
+The first run applies the Flyway migrations. Collection is off at startup by
+default — a boot should not depend on public websites being reachable.
 
 Smoke check: `curl http://localhost:8080/actuator/health` returns
 `{"status":"UP"}`. The API contract is in
@@ -76,12 +77,34 @@ cd ml-service && python -m uvicorn ml_service.main:app --port 8000   # terminal 
 cd frontend   && npm run dev                                   # terminal 3
 ```
 
-To regenerate forecasts immediately instead of waiting for the daily schedule:
-`./mvnw spring-boot:run -Dspring-boot.run.arguments=--app.forecast.refresh-on-startup=true`.
+To do a morning's work immediately instead of waiting for the schedule:
+
+```bash
+# collect today's prices and weather (reaches two public sites and Open-Meteo)
+./mvnw spring-boot:run -Dspring-boot.run.arguments=--app.ingest.run-on-startup=true
+# regenerate the forecast (needs the ML service up)
+./mvnw spring-boot:run -Dspring-boot.run.arguments=--app.forecast.refresh-on-startup=true
+```
+
+Both write to the real database, and both are idempotent — running them twice
+in a day corrects rows rather than duplicating them.
 
 There is no orchestration (`infra/docker/`) yet.
 
+## Daily schedule
+
+The backend runs these on its own once it is up, all times local:
+
+| Time | Job | What it does |
+|---|---|---|
+| 07:00 | `price_ingestion` | Scrapes today's regional prices, falls back to a second site |
+| 07:10 | `weather_ingestion` | Reads Open-Meteo for the six growing provinces |
+| 08:15 | forecast refresh | Calls the ML service and stores the run |
+
+Every collection attempt lands in `ingestion_run` with a status and a detail;
+that table is the first place to look when the numbers stop moving. See
+[`../adr/0005-data-ingestion.md`](../adr/0005-data-ingestion.md).
+
 ## Not applicable yet
 
-PostgreSQL/Redis setup, the ML service, and full-stack orchestration land
-with the components that need them.
+Redis and full-stack orchestration land with the components that need them.

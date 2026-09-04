@@ -6,8 +6,9 @@ orchestrator.
 **Owns**: the public REST API, authentication/authorization, the
 PostgreSQL schema and its migrations (coordinated with
 `db/migrations/`), persistence of users/market prices/data
-sources/ingestion records/forecasts/job execution records, and
-orchestration of calls to the ML service's internal API.
+sources/ingestion records/forecasts/job execution records, the daily
+collection of prices and weather, and orchestration of calls to the ML
+service's internal API.
 
 **Does not own**: ML computation (feature engineering, training,
 evaluation) — that's `ml-service/`'s responsibility, invoked over an
@@ -22,6 +23,11 @@ Schema and data both belong to this service: Flyway migrations in
 `src/main/resources/db/migration/` create the tables and imported the history
 an earlier prototype had already collected in the same database. See
 [`docs/database/README.md`](../docs/database/README.md).
+
+Since [ADR-0005](../docs/adr/0005-data-ingestion.md) it also collects that data
+itself — prices scraped from two public sites, weather from Open-Meteo — each
+morning ahead of the forecast refresh, logging every attempt to
+`ingestion_run`.
 
 ## Running
 
@@ -50,6 +56,7 @@ src/main/java/com/giatieuviet/backend/
   api/error/     RFC 9457 problem responses, decided centrally
   domain/        Granularity, WeatherCondition — wire codes live here
   forecast/      calls the ML service and stores the run it returns
+  ingest/        daily collection of prices and weather, and its run log
   internal/      endpoints for the ML service, not the public contract
   persistence/   JPA entities and Spring Data repositories
   service/       interfaces the controllers depend on
@@ -64,6 +71,9 @@ src/main/resources/db/migration/   Flyway migrations
 | `SUPABASE_DB_URL` | — | JDBC URL, session pooler (port 5432) |
 | `SUPABASE_DB_USER` | — | Database user |
 | `SUPABASE_DB_PASSWORD` | — | Database password — from `.env`, never committed |
+| `app.ingest.price.cron` | `0 0 7 * * *` | When prices are collected |
+| `app.ingest.weather.cron` | `0 10 7 * * *` | When weather is collected |
+| `app.ingest.run-on-startup` | `false` | Collect once at boot, for local runs |
 | `app.ml-service.base-url` | `http://localhost:8000` | Where the ML service listens |
 | `app.forecast.refresh-cron` | `0 15 8 * * *` | When forecasts are regenerated |
 | `app.forecast.refresh-on-startup` | `false` | Regenerate once at boot, for local runs |

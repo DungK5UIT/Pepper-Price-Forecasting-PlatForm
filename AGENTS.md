@@ -21,8 +21,13 @@ The forecasting model is deliberately modest and measured against a naive
 baseline — see `docs/adr/0004-forecasting-model.md`; the baseline currently
 wins and is what ships.
 
-Not built yet: ingestion jobs (prices and weather are still whatever an earlier
-prototype collected), auth, deployment.
+Prices and weather are collected daily by the backend itself (ADR-0005),
+ahead of the forecast refresh that consumes them; every attempt is logged to
+`ingestion_run`.
+
+Not built yet: auth, deployment, and any alerting on a collection run that
+fails.
+
 See `docs/architecture/` for system design and `docs/adr/` for recorded
 decisions.
 
