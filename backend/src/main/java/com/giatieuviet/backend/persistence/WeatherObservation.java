@@ -45,6 +45,28 @@ public class WeatherObservation {
         // for JPA
     }
 
+    public WeatherObservation(String province, LocalDate observedDate, BigDecimal tempC,
+                              BigDecimal rainfallMm, BigDecimal windSpeedKmh, boolean forecast) {
+        this.province = province;
+        this.observedDate = observedDate;
+        this.tempC = tempC;
+        this.rainfallMm = rainfallMm;
+        this.windSpeedKmh = windSpeedKmh;
+        this.forecast = forecast;
+    }
+
+    /**
+     * Replaces a day's figures with a later reading. Routine rather than
+     * exceptional: a date first arrives as a forecast and is overwritten with
+     * the measured value once it has passed.
+     */
+    public void correctTo(BigDecimal tempC, BigDecimal rainfallMm, BigDecimal windSpeedKmh, boolean forecast) {
+        this.tempC = tempC;
+        this.rainfallMm = rainfallMm;
+        this.windSpeedKmh = windSpeedKmh;
+        this.forecast = forecast;
+    }
+
     public Long getId() {
         return id;
     }
