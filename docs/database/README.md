@@ -25,10 +25,15 @@ RLS), so the effect is to deny Supabase's `anon`/`authenticated` roles.
 
 `market_price` and `weather_observation` are filled each morning by the
 backend's own collection jobs — two public price sites and Open-Meteo — see
-[`../adr/0005-data-ingestion.md`](../adr/0005-data-ingestion.md). Rows dated
-before 2026-09-04, and every row with a `source` of
-`historical_backfill_2026-08_interpolated`, came from the earlier prototype by
-way of `V2`.
+[`../adr/0005-data-ingestion.md`](../adr/0005-data-ingestion.md).
+
+Older rows are historical imports, distinguishable by `source`:
+
+| `source` | Covers | What it is |
+|---|---|---|
+| `research_monthly_2005-2022` | 2005-01 → 2022-12, monthly | The project owner's collected series, imported by `V4` so the model had more than a few dozen points to learn from. |
+| `historical_backfill_2026-08_interpolated` | 2023-01 → 2026-07, monthly | The earlier prototype's interpolated series, imported by `V2`. One point per month, not observed daily prices. |
+| `giacaphe.com/...`, `giatieu.com/...` | 2026-08-08 onward, daily | Actually observed, collected by this platform. |
 
 `forecast` is written by the refresh that calls the ML service;
 `market_insight` is still prototype data, with nothing generating it yet.

@@ -58,12 +58,41 @@ On the first run, the baseline won and is what ships:
   already contain. They exist so the chart can draw a continuous line, and are
   flagged `interpolated` in the internal API.
 - The GBM code stays in the repository even though the baseline currently
-  wins — it is what more data will be tested against.
+  wins — it is what a richer feature set will be tested against.
 
 **Revisit when**: a year or so of daily weather accumulates (restoring the
-weather features), the platform ingests CPI/FX (restoring the macro features),
-or the price history grows enough that the GBM beats the baseline on the same
-split.
+weather features), or the platform ingests CPI/FX (restoring the macro
+features).
+
+### Update, 2026-09-04: measured again on 261 months
+
+The third trigger above — "the price history grows enough" — has been tested
+and closed. V4 imported the project owner's real 2005–2022 monthly series,
+taking training data from 44 monthly points to 261. That is six times the data,
+and it spans the 2015 peak at 202,000 and the fall to 41,000 by 2020, so the
+model finally saw a crash.
+
+| Walk-forward, 495 scored predictions | GBM | Naive |
+|---|---|---|
+| Mean pinball loss (đ) | 2,401 | **2,146** |
+| Median absolute error (đ) | 7,086 | **6,459** |
+| 10–90 band coverage (target 0.80) | 0.638 | **0.834** |
+
+Both improved. The ranking did not: the baseline still wins on every measure,
+by roughly the same relative margin as on 44 points. The GBM's band coverage
+got *worse* — 0.705 to 0.638 — so more data made it more confident, not more
+correct, which is what an overfit quantile model looks like.
+
+The conclusion is therefore much stronger than it was. On 44 points "not
+enough data" was a fair reading. On 261 it is not: with lagged log-returns and
+seasonality as the only inputs, monthly Vietnamese pepper prices are close
+enough to a random walk that a random walk is the better forecast. Adding more
+price history is now a settled dead end, and this ADR should not be revisited
+on that basis again.
+
+What is left untested is whether *exogenous* information changes the answer —
+the CPI, FX, weather and production-side columns the prototype had and this
+feature set drops. That is the open question, not the amount of price.
 
 ## Alternatives Considered
 

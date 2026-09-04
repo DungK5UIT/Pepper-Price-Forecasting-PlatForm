@@ -1,6 +1,6 @@
 {
-  "trainedAt": "2026-09-01T10:20:06+00:00",
-  "modelVersion": "naive-2026-09-01",
+  "trainedAt": "2026-09-04T12:38:48+00:00",
+  "modelVersion": "naive-2026-09-04",
   "selectedStrategy": "naive",
   "features": [
     "dlogP_lag_1",
@@ -9,37 +9,37 @@
     "sin_m",
     "cos_m"
   ],
-  "monthlyPoints": 44,
+  "monthlyPoints": 261,
   "historyRange": {
-    "from": "2023-01-01",
-    "to": "2026-08-01"
+    "from": "2005-01-01",
+    "to": "2026-09-01"
   },
   "trainingRows": {
-    "horizon1": 39,
-    "horizon2": 38
+    "horizon1": 256,
+    "horizon2": 255
   },
   "backtest": {
     "gbm": {
-      "scoredPredictions": 61,
+      "scoredPredictions": 495,
       "pinballVnd": {
-        "q10": 2022.6,
-        "q50": 4861.2,
-        "q90": 3063.5
+        "q10": 1689.4,
+        "q50": 3543.0,
+        "q90": 1970.6
       },
-      "meanPinballVnd": 3315.8,
-      "medianAbsoluteErrorVnd": 9722.5,
-      "bandCoverage": 0.705
+      "meanPinballVnd": 2401.0,
+      "medianAbsoluteErrorVnd": 7086.0,
+      "bandCoverage": 0.638
     },
     "naive": {
-      "scoredPredictions": 61,
+      "scoredPredictions": 495,
       "pinballVnd": {
-        "q10": 1716.5,
-        "q50": 3565.4,
-        "q90": 3351.9
+        "q10": 1366.4,
+        "q50": 3229.3,
+        "q90": 1842.4
       },
-      "meanPinballVnd": 2877.9,
-      "medianAbsoluteErrorVnd": 7130.8,
-      "bandCoverage": 0.869
+      "meanPinballVnd": 2146.0,
+      "medianAbsoluteErrorVnd": 6458.7,
+      "bandCoverage": 0.834
     }
   }
 }

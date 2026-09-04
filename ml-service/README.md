@@ -21,9 +21,17 @@ is reduced to what the backend can supply, and every training run scores the
 model against a naive baseline and keeps whichever is better — see
 [`docs/adr/0004-forecasting-model.md`](../docs/adr/0004-forecasting-model.md).
 
-**The baseline currently wins**, so what ships is the random walk: the median
-stays at the latest observed price and the band widens with time. That is the
-honest reading of 44 monthly data points, not a placeholder.
+**The baseline wins**, so what ships is the random walk: the median stays at
+the latest observed price and the band widens with time.
+
+That is not a placeholder, and it is no longer a small-sample excuse. It was
+first measured on 44 monthly points; after V4 imported the real 2005-2022
+series it was measured again on **261**, and the baseline still won on mean
+pinball loss (2,146 vs 2,401 đ), median absolute error (6,459 vs 7,086 đ) and
+band coverage (0.834 vs 0.638 against a 0.80 target). Six times the data moved
+both scores and neither ranking. With lagged log-returns and seasonality as
+the only inputs, monthly pepper prices are close enough to a random walk that
+the random walk is the better forecast.
 
 ## Running
 
