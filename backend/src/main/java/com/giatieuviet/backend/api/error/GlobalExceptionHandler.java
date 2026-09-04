@@ -6,13 +6,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
  * Turns exceptions into RFC 9457 problem responses, so every endpoint reports
  * failures the same way instead of each controller inventing its own shape.
+ *
+ * Extends {@link ResponseEntityExceptionHandler} for the exceptions Spring MVC
+ * raises itself — an unknown path, a wrong method, an unparseable parameter.
+ * Those already carry the right status; without it the catch-all below would
+ * swallow them and report every one of them as 500.
  */
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
@@ -30,8 +36,9 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Anything unanticipated: logged with the stack trace for diagnosis, but
-     * reported to the caller without internal detail.
+     * Anything unanticipated — genuinely ours, since Spring's own web
+     * exceptions are handled by the superclass. Logged with the stack trace
+     * for diagnosis, reported to the caller without internal detail.
      */
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception exception) {

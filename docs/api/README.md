@@ -14,10 +14,17 @@ between two components owned by the same team, not a public contract.
 - JSON only. Money is in whole VND (`long`), never a formatted string —
   formatting is the frontend's concern.
 - Optional fields are **omitted** rather than sent as `null`.
-- No authentication yet: every endpoint below is public read-only data.
-  Auth arrives with the first user-specific resource.
+- No authentication on this contract: every endpoint below is public
+  read-only data. A credential is required elsewhere — `/internal/**` and the
+  actuator detail — see
+  [`../adr/0006-internal-api-access.md`](../adr/0006-internal-api-access.md).
+  Per-user auth arrives with the first user-specific resource.
+- Only `GET` is permitted here. A write is refused with `401` rather than
+  `405`: there are no write endpoints, so nothing is routed.
 - Errors use RFC 9457 problem details (`application/problem+json`),
-  produced centrally by `GlobalExceptionHandler`:
+  produced centrally by `GlobalExceptionHandler`. Statuses are the usual
+  ones — `400` for a value the domain rejects, `404` for an unknown path,
+  `500` only for a genuine fault:
 
   ```json
   {
