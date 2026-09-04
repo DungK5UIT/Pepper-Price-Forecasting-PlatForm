@@ -27,8 +27,12 @@ Prices and weather now arrive on their own: the backend collects both each
 morning ahead of the forecast refresh, and logs every attempt
 ([ADR-0005](docs/adr/0005-data-ingestion.md)).
 
-Still absent: auth, deployment, and anything that watches the collection log
-and complains when a run fails.
+The internal training endpoint and the actuator detail are behind a machine
+credential ([ADR-0006](docs/adr/0006-internal-api-access.md)); the public read
+API stays open.
+
+Still absent: user accounts, deployment, and anything that actually sends an
+alert when a collection run fails.
 
 ## Architecture at a Glance
 

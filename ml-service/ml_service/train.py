@@ -5,6 +5,10 @@ Run against a running backend, which is where the training data comes from
 
     python -m ml_service.train --backend-url http://localhost:8080
 
+The backend's internal endpoints require the machine credential set in
+``INTERNAL_API_USER`` / ``INTERNAL_API_PASSWORD`` (the same pair the backend
+was started with; see ``backend/.env.example``).
+
 Writes ``artifacts/forecast_model.joblib`` and ``artifacts/metrics.json``.
 
 The backtest is not decoration. The available history is ~44 monthly points, at
@@ -18,6 +22,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -36,10 +41,28 @@ ARTIFACT_DIR = Path(__file__).parent / "artifacts"
 MIN_TRAIN_ROWS = 12
 
 
+def internal_credentials() -> tuple[str, str]:
+    """Read the backend's machine credential from the environment.
+
+    Raised rather than defaulted: a fallback here would silently stop matching
+    the backend the day it gets a real password, and the failure would look
+    like an authentication bug instead of a missing setting.
+    """
+    username = os.environ.get("INTERNAL_API_USER")
+    password = os.environ.get("INTERNAL_API_PASSWORD")
+    if not username or not password:
+        raise RuntimeError(
+            "Set INTERNAL_API_USER and INTERNAL_API_PASSWORD to the credential the "
+            "backend was started with -- /internal/** requires it."
+        )
+    return username, password
+
+
 def fetch_history(backend_url: str) -> list[dict]:
     response = httpx.get(
         f"{backend_url.rstrip('/')}/internal/v1/price-history",
         params={"region": "national"},
+        auth=internal_credentials(),
         timeout=30.0,
     )
     response.raise_for_status()

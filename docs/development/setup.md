@@ -17,9 +17,14 @@ credentials to configure.
 
 ## Backend
 
-Needs database credentials — copy `backend/.env.example` to `backend/.env`
-and fill in the Supabase password (Project Settings → Database → Connection
-string → **Session pooler**). `.env` is git-ignored.
+Needs two credentials — copy `backend/.env.example` to `backend/.env` and fill
+in both. `.env` is git-ignored.
+
+- `SUPABASE_DB_PASSWORD` — Project Settings → Database → Connection string →
+  **Session pooler**.
+- `INTERNAL_API_PASSWORD` — any long random string you generate
+  (`openssl rand -base64 32`). It guards `/internal/**`; there is no default,
+  so the application will not start until it is set.
 
 ```bash
 cd backend
@@ -62,8 +67,14 @@ pytest                                            # no credentials needed
 python -m uvicorn ml_service.main:app --port 8000
 ```
 
-Retraining needs the backend up, since that is where training data comes from:
-`python -m ml_service.train`. See [`../../ml-service/README.md`](../../ml-service/README.md).
+Retraining needs the backend up, since that is where training data comes from,
+and the same internal credential the backend was started with:
+
+```bash
+export INTERNAL_API_USER=ml-service
+export INTERNAL_API_PASSWORD=...      # the value in backend/.env
+python -m ml_service.train
+``` See [`../../ml-service/README.md`](../../ml-service/README.md).
 
 ## Running everything
 
@@ -105,10 +116,11 @@ Every collection attempt lands in `ingestion_run` with a status and a detail.
 You do not have to query it by hand:
 
 ```bash
-curl -s http://localhost:8080/actuator/health | jq .components.ingestion
+curl -su "$INTERNAL_API_USER:$INTERNAL_API_PASSWORD"   http://localhost:8080/actuator/health | jq .components.ingestion
 ```
 
-reports `fresh` or `stale` per job, with the last successful run. The
+reports `fresh` or `stale` per job, with the last successful run. Without the
+credential the endpoint still answers, with the aggregate status only. The
 aggregate status turns `STALE` — still HTTP 200, since the service itself is
 healthy — when a job has been quiet for more than 26 hours. See
 [`../adr/0005-data-ingestion.md`](../adr/0005-data-ingestion.md).

@@ -25,8 +25,11 @@ Prices and weather are collected daily by the backend itself (ADR-0005),
 ahead of the forecast refresh that consumes them; every attempt is logged to
 `ingestion_run`.
 
-Not built yet: auth, deployment, and any alerting on a collection run that
-fails.
+`/internal/**` and the actuator detail sit behind a machine credential
+(ADR-0006); the public read API stays open.
+
+Not built yet: user accounts, deployment, and anything that actually sends an
+alert when a collection run fails.
 
 See `docs/architecture/` for system design and `docs/adr/` for recorded
 decisions.

@@ -71,6 +71,8 @@ src/main/resources/db/migration/   Flyway migrations
 | `SUPABASE_DB_URL` | — | JDBC URL, session pooler (port 5432) |
 | `SUPABASE_DB_USER` | — | Database user |
 | `SUPABASE_DB_PASSWORD` | — | Database password — from `.env`, never committed |
+| `INTERNAL_API_USER` | — | Username the ML service presents to `/internal/**` |
+| `INTERNAL_API_PASSWORD` | — | Its password. No default — the app refuses to start without one |
 | `app.ingest.price.cron` | `0 0 7 * * *` | When prices are collected |
 | `app.ingest.weather.cron` | `0 10 7 * * *` | When weather is collected |
 | `app.ingest.run-on-startup` | `false` | Collect once at boot, for local runs |
@@ -81,11 +83,28 @@ src/main/resources/db/migration/   Flyway migrations
 | `app.cors.allowed-origins` | `http://localhost:3000` | Origins allowed to call `/api/**` |
 | `management.endpoints.web.exposure.include` | `health,info` | Exposed actuator endpoints |
 
+## Access
+
+| Surface | Who |
+|---|---|
+| `GET /api/**` | Anyone. Read-only, and the prices on it are already published by their sources. |
+| `GET /actuator/health` | Anyone, so an uptime check needs no credential — but the per-component detail only shows to an authenticated caller. |
+| `/internal/**` | The `INTERNAL` role only, over HTTP Basic. This is the ML service's training-data pull, which returns the whole price series in one request. |
+| anything else | Closed. |
+
+There are no user accounts and no mutating endpoints; the single credential is
+a machine account, not a person. See
+[`docs/adr/0006-internal-api-access.md`](../docs/adr/0006-internal-api-access.md).
+
 `GET /actuator/health` reports an `ingestion` component alongside the usual
 database and disk checks: when a collection job has not succeeded within the
 staleness threshold the aggregate status becomes `STALE`. It stays HTTP 200
 on purpose — the process is fine, its data is not — so a check has to read the
-body rather than the status code.
+body rather than the status code. The breakdown needs the internal credential:
+
+```bash
+curl -su "$INTERNAL_API_USER:$INTERNAL_API_PASSWORD" localhost:8080/actuator/health
+```
 
 `.env` next to the pom is imported automatically when present, so deployments
 can inject the same variables from the environment instead.

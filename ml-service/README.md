@@ -41,11 +41,18 @@ without digging.
 
 ## Training
 
-Training data comes from the backend, which must be running (ADR-0003):
+Training data comes from the backend, which must be running (ADR-0003). Its
+`/internal/**` endpoints require the machine credential the backend was started
+with (ADR-0006), read from the environment:
 
 ```bash
+export INTERNAL_API_USER=ml-service
+export INTERNAL_API_PASSWORD=...      # the value in backend/.env
 python -m ml_service.train --backend-url http://localhost:8080
 ```
+
+Unset, the run fails with a message saying so rather than falling back to a
+default that would stop matching the backend the day it gets a real password.
 
 Writes `ml_service/artifacts/forecast_model.joblib` and
 `ml_service/artifacts/metrics.json`. Both are committed so a fresh clone can
