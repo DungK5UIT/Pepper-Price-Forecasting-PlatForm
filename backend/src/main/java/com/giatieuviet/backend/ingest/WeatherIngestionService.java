@@ -10,6 +10,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -33,14 +34,16 @@ public class WeatherIngestionService {
     private final WeatherSource weatherSource;
     private final WeatherObservationStore observationStore;
     private final IngestionRunStore runStore;
+    private final Clock clock;
     private final boolean ingestOnStartup;
 
     public WeatherIngestionService(WeatherSource weatherSource, WeatherObservationStore observationStore,
-                                   IngestionRunStore runStore,
+                                   IngestionRunStore runStore, Clock clock,
                                    @Value("${app.ingest.run-on-startup:false}") boolean ingestOnStartup) {
         this.weatherSource = weatherSource;
         this.observationStore = observationStore;
         this.runStore = runStore;
+        this.clock = clock;
         this.ingestOnStartup = ingestOnStartup;
     }
 
@@ -52,7 +55,7 @@ public class WeatherIngestionService {
         }
     }
 
-    @Scheduled(cron = "${app.ingest.weather.cron:0 10 7 * * *}")
+    @Scheduled(cron = "${app.ingest.weather.cron:0 10 7 * * *}", zone = "${app.time-zone}")
     public void ingestOnSchedule() {
         ingestQuietly();
     }
@@ -69,7 +72,7 @@ public class WeatherIngestionService {
 
     public int ingest() {
         Instant startedAt = Instant.now();
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(clock);
 
         List<WeatherSource.DailyWeather> days;
         try {

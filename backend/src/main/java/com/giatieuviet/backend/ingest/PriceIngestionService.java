@@ -70,7 +70,7 @@ public class PriceIngestionService {
     }
 
     /** Early enough that the forecast refresh, later the same morning, sees today's price. */
-    @Scheduled(cron = "${app.ingest.price.cron:0 0 7 * * *}")
+    @Scheduled(cron = "${app.ingest.price.cron:0 0 7 * * *}", zone = "${app.time-zone}")
     public void ingestOnSchedule() {
         ingestQuietly();
     }

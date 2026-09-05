@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +43,9 @@ class GiaCaPhePriceSource extends HtmlPriceSource {
                     + "<td\\s+class=['\"]gnd-gia['\"]\\s+data-price=['\"](\\d+)['\"]");
 
     GiaCaPhePriceSource(RestClient.Builder builder,
-                        @Value("${app.ingest.price.giacaphe-url:https://giacaphe.com/gia-tieu-hom-nay/}") String url) {
-        super(builder, url);
+                        @Value("${app.ingest.price.giacaphe-url:https://giacaphe.com/gia-tieu-hom-nay/}") String url,
+                        Clock clock) {
+        super(builder, url, clock);
     }
 
     @Override
@@ -62,7 +64,7 @@ class GiaCaPhePriceSource extends HtmlPriceSource {
             throw new PriceScrapeException(
                     "No price rows found on " + SOURCE_NAME + " — the page layout has probably changed");
         }
-        return new PricePage(parsePageDate(html), regions);
+        return new PricePage(pageDate(html), regions);
     }
 
     /**
@@ -71,10 +73,10 @@ class GiaCaPhePriceSource extends HtmlPriceSource {
      * reword than a stale page — and the plausibility check still guards the
      * numbers themselves.
      */
-    private static LocalDate parsePageDate(String html) {
+    private LocalDate pageDate(String html) {
         Matcher date = PAGE_DATE.matcher(html);
         if (!date.find()) {
-            return LocalDate.now();
+            return today();
         }
         return LocalDate.of(
                 Integer.parseInt(date.group(3)),

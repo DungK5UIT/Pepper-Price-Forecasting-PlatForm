@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -38,16 +39,19 @@ public class ForecastRefreshService {
     private final MarketPriceRepository marketPrices;
     private final MlForecastClient mlForecastClient;
     private final ForecastRunStore runStore;
+    private final Clock clock;
     private final boolean refreshOnStartup;
 
     public ForecastRefreshService(
             MarketPriceRepository marketPrices,
             MlForecastClient mlForecastClient,
             ForecastRunStore runStore,
+            Clock clock,
             @Value("${app.forecast.refresh-on-startup:false}") boolean refreshOnStartup) {
         this.marketPrices = marketPrices;
         this.mlForecastClient = mlForecastClient;
         this.runStore = runStore;
+        this.clock = clock;
         this.refreshOnStartup = refreshOnStartup;
     }
 
@@ -61,7 +65,7 @@ public class ForecastRefreshService {
         }
     }
 
-    @Scheduled(cron = "${app.forecast.refresh-cron:0 15 8 * * *}")
+    @Scheduled(cron = "${app.forecast.refresh-cron:0 15 8 * * *}", zone = "${app.time-zone}")
     public void refreshOnSchedule() {
         refreshQuietly();
     }
@@ -89,7 +93,7 @@ public class ForecastRefreshService {
         MarketPrice latest = history.get(history.size() - 1);
         // The run is dated today even though the anchor is the latest observed
         // price, which is routinely yesterday's — as-of is when we forecast.
-        LocalDate asOfDate = LocalDate.now();
+        LocalDate asOfDate = LocalDate.now(clock);
 
         MlForecastClient.ForecastRun run = mlForecastClient.generate(new MlForecastClient.ForecastRequest(
                 asOfDate,

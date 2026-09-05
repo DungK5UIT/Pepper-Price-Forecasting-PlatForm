@@ -73,6 +73,7 @@ src/main/resources/db/migration/   Flyway migrations
 | `SUPABASE_DB_PASSWORD` | — | Database password — from `.env`, never committed |
 | `INTERNAL_API_USER` | — | Username the ML service presents to `/internal/**` |
 | `INTERNAL_API_PASSWORD` | — | Its password. No default — the app refuses to start without one |
+| `app.time-zone` | `Asia/Ho_Chi_Minh` | The zone every date and cron is anchored to, independent of the host's |
 | `app.ingest.price.cron` | `0 0 7 * * *` | When prices are collected |
 | `app.ingest.weather.cron` | `0 10 7 * * *` | When weather is collected |
 | `app.ingest.run-on-startup` | `false` | Collect once at boot, for local runs |
@@ -82,6 +83,17 @@ src/main/resources/db/migration/   Flyway migrations
 | `app.forecast.refresh-on-startup` | `false` | Regenerate once at boot, for local runs |
 | `app.cors.allowed-origins` | `http://localhost:3000` | Origins allowed to call `/api/**` |
 | `management.endpoints.web.exposure.include` | `health,info` | Exposed actuator endpoints |
+
+## Time
+
+Nothing in this service reads the host's clock zone. A price belongs to a
+Vietnamese trading day, so `app.time-zone` anchors the `Clock` bean and every
+scheduled cron. Containers default to UTC, where each hour before 07:00 local
+still reads as the previous date — enough to date a day's prices to yesterday
+and label yesterday's weather "Hôm nay", with nothing appearing to fail.
+
+`./mvnw test -DargLine="-Duser.timezone=UTC"` runs the suite as a container
+would.
 
 ## Access
 

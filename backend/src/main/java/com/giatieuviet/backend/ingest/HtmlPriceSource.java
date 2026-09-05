@@ -4,6 +4,8 @@ import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.LocalDate;
 
 /**
  * Shared plumbing for the sources that scrape an HTML page: fetch the bytes,
@@ -28,10 +30,20 @@ abstract class HtmlPriceSource implements PriceSource {
 
     private final RestClient restClient;
     private final String url;
+    private final Clock clock;
 
-    protected HtmlPriceSource(RestClient.Builder builder, String url) {
+    protected HtmlPriceSource(RestClient.Builder builder, String url, Clock clock) {
         this.restClient = builder.build();
         this.url = url;
+        this.clock = clock;
+    }
+
+    /**
+     * The trading day, in the zone the sources publish for — never the host's
+     * idea of today, which on a UTC container is yesterday all morning.
+     */
+    protected LocalDate today() {
+        return LocalDate.now(clock);
     }
 
     @Override

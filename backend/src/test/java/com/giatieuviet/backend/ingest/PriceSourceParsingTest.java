@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -22,10 +24,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class PriceSourceParsingTest {
 
+    private static final Clock VIETNAM = Clock.system(ZoneId.of("Asia/Ho_Chi_Minh"));
+
     private final GiaCaPhePriceSource giaCaPhe =
-            new GiaCaPhePriceSource(RestClient.builder(), "https://example.invalid");
+            new GiaCaPhePriceSource(RestClient.builder(), "https://example.invalid", VIETNAM);
     private final GiaTieuPriceSource giaTieu =
-            new GiaTieuPriceSource(RestClient.builder(), "https://example.invalid");
+            new GiaTieuPriceSource(RestClient.builder(), "https://example.invalid", VIETNAM);
 
     private static String fixture(String name) {
         try (var stream = new ClassPathResource("ingest/" + name).getInputStream()) {

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -44,16 +45,18 @@ public class DatabaseWeatherService implements WeatherService {
             DayOfWeek.SUNDAY, "CN");
 
     private final WeatherObservationRepository observations;
+    private final Clock clock;
 
-    public DatabaseWeatherService(WeatherObservationRepository observations) {
+    public DatabaseWeatherService(WeatherObservationRepository observations, Clock clock) {
         this.observations = observations;
+        this.clock = clock;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ProvinceWeatherResponse> provinceWeather() {
         List<WeatherObservation> upcoming = observations
-                .findByObservedDateGreaterThanEqualOrderByProvinceAscObservedDateAsc(LocalDate.now());
+                .findByObservedDateGreaterThanEqualOrderByProvinceAscObservedDateAsc(LocalDate.now(clock));
 
         Map<String, List<WeatherObservation>> byProvince = new LinkedHashMap<>();
         for (WeatherObservation observation : upcoming) {
