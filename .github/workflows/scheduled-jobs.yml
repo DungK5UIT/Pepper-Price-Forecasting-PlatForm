@@ -1,0 +1,53 @@
+name: Scheduled jobs
+
+# Replaces the backend's old in-process @Scheduled cron (see
+# docs/adr/0008-render-and-external-scheduling.md): Render's free web
+# services sleep after 15 minutes idle, so an in-process cron would
+# silently stop firing while asleep. This calls the same work through
+# /internal/v1/jobs/* instead, and only needs the backend awake for the
+# call.
+#
+# 00:00 UTC = 07:00 Asia/Ho_Chi_Minh (UTC+7, no DST) — the original
+# ingestion time. The old 07:10/08:15 stagger is gone: these run as
+# sequential steps in one job instead, so price → weather → forecast
+# ordering is explicit rather than implied by clock spacing.
+#
+# GitHub's scheduled workflows aren't perfectly reliable — they can lag
+# under platform load, and auto-disable after 60 days with no repository
+# activity. Accepted for a hobby project; not hidden (see ADR-0008).
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch: {}
+
+env:
+  BACKEND_URL: https://giatieuviet-backend.onrender.com
+
+jobs:
+  run-daily-jobs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for the backend to wake up
+        run: |
+          curl --fail --silent --show-error \
+            --retry 8 --retry-delay 10 --retry-all-errors \
+            "$BACKEND_URL/actuator/health"
+
+      - name: Ingest today's prices
+        run: |
+          curl --fail --silent --show-error \
+            -u "${{ secrets.INTERNAL_API_USER }}:${{ secrets.INTERNAL_API_PASSWORD }}" \
+            -X POST "$BACKEND_URL/internal/v1/jobs/ingest-price"
+
+      - name: Ingest today's weather
+        run: |
+          curl --fail --silent --show-error \
+            -u "${{ secrets.INTERNAL_API_USER }}:${{ secrets.INTERNAL_API_PASSWORD }}" \
+            -X POST "$BACKEND_URL/internal/v1/jobs/ingest-weather"
+
+      - name: Refresh the forecast
+        run: |
+          curl --fail --silent --show-error \
+            -u "${{ secrets.INTERNAL_API_USER }}:${{ secrets.INTERNAL_API_PASSWORD }}" \
+            -X POST "$BACKEND_URL/internal/v1/jobs/refresh-forecast"

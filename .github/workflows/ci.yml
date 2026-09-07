@@ -1,11 +1,9 @@
 name: CI
 
-# Tests and deploys as needs-linked jobs in one file, rather than a
-# separate ci.yml + workflow_run-triggered deploy.yml. workflow_run has a
-# well-known first-run gotcha (it only fires once the triggering workflow
-# already exists on the default branch) and is harder to read end-to-end.
-# For a solo project where the point is that a reader can follow the whole
-# pipeline in one pass, that outweighs the "cleaner" separation on paper.
+# No deploy jobs here: Render's Blueprint auto-deploys both backend and
+# ml-service on every push to main (autoDeployTrigger: commit in
+# infra/render/render.yaml), the same way Vercel's Git integration deploys
+# the frontend. See docs/adr/0008-render-and-external-scheduling.md.
 
 on:
   push:
@@ -59,28 +57,3 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
-
-  deploy-backend:
-    needs: backend-test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --config infra/fly/backend.toml --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-  deploy-ml-service:
-    needs: ml-service-test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --config infra/fly/ml-service.toml --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-  # No deploy-frontend job: Vercel's Git integration deploys the frontend
-  # independently of this workflow. See docs/adr/0007-hosted-deployment.md.
