@@ -100,7 +100,22 @@ To do a morning's work immediately instead of waiting for the schedule:
 Both write to the real database, and both are idempotent — running them twice
 in a day corrects rows rather than duplicating them.
 
-There is no orchestration (`infra/docker/`) yet.
+## Everything at once, in containers
+
+The three terminals above are the fast loop for editing code. To run the
+platform the way it is deployed:
+
+```bash
+cp infra/docker/.env.example infra/docker/.env    # fill in both passwords
+docker compose -f infra/docker/compose.yaml --env-file infra/docker/.env up --build
+```
+
+From the repository root. Only the frontend is published; the backend binds to
+`127.0.0.1:8080` for operator access and the ML service is not published at
+all. See [`../../infra/docker/README.md`](../../infra/docker/README.md).
+
+Note that this writes to the real Supabase database, exactly as production
+would.
 
 ## Daily schedule
 

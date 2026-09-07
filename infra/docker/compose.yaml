@@ -1,0 +1,68 @@
+# The whole platform, as it is meant to be deployed.
+#
+# Run from the repository root:
+#   docker compose -f infra/docker/compose.yaml --env-file infra/docker/.env up --build
+#
+# There is no postgres service here on purpose: the database is Supabase, and
+# a local one would be a different database with a different schema history.
+# See docs/database/README.md.
+#
+# What each service can reach is the point of this file, not an accident of it:
+#
+#   frontend   published — the only thing a browser ever talks to
+#   backend    localhost only — the browser never calls it (every fetch is
+#              server-side), so it is bound to 127.0.0.1 for operator access
+#              to /actuator/health and nothing more
+#   ml-service not published at all — reachable only by the backend
+#
+# That is the shape to reproduce on a host: one public port, two private
+# services. It also means /internal/** never faces the internet, which is a
+# stronger guarantee than the credential guarding it (ADR-0006).
+
+name: giatieuviet
+
+services:
+  ml-service:
+    build:
+      context: ../../ml-service
+    # No `ports`. Compose puts every service on a shared network where they
+    # resolve each other by name, so the backend reaches this at
+    # http://ml-service:8000 without any of it being exposed.
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ../../backend
+    environment:
+      SUPABASE_DB_URL: ${SUPABASE_DB_URL:?set it in infra/docker/.env}
+      SUPABASE_DB_USER: ${SUPABASE_DB_USER:?set it in infra/docker/.env}
+      SUPABASE_DB_PASSWORD: ${SUPABASE_DB_PASSWORD:?set it in infra/docker/.env}
+      INTERNAL_API_USER: ${INTERNAL_API_USER:?set it in infra/docker/.env}
+      INTERNAL_API_PASSWORD: ${INTERNAL_API_PASSWORD:?set it in infra/docker/.env}
+      # Spring's relaxed binding: app.ml-service.base-url. Hyphens are
+      # dropped, dots become underscores.
+      APP_MLSERVICE_BASEURL: http://ml-service:8000
+      # app.cors.allowed-origins is left at its default. The browser never
+      # calls this service, so the value is unused either way — and an empty
+      # one binds to a single blank origin, which CORS rejects at startup.
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      - ml-service
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../../frontend
+    environment:
+      # Server-side only — it names a host that exists just on this network,
+      # and would be meaningless to a browser even if it reached one.
+      API_BASE_URL: http://backend:8080
+    ports:
+      - "3000:3000"
+    # Ordering only — Compose does not wait for readiness. A request arriving
+    # before the backend is up renders the error boundary and recovers on
+    # refresh, which is the same thing that happens if the backend restarts.
+    depends_on:
+      - backend
+    restart: unless-stopped

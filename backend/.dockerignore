@@ -1,0 +1,7 @@
+# Everything the image builds for itself, or must never contain.
+target/
+.env
+.env.*
+!.env.example
+*.iml
+.idea/

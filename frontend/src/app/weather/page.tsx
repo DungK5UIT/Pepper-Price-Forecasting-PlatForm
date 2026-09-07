@@ -11,6 +11,17 @@ export const metadata: Metadata = {
   description: "Dự báo 7 ngày nhiệt độ, lượng mưa và gió tại 6 tỉnh trồng tiêu trọng điểm Việt Nam.",
 };
 
+/**
+ * Rendered per request rather than prerendered at build.
+ *
+ * The page reads everything from the backend, so a statically generated build
+ * would need the backend reachable from wherever the image is built — a CI
+ * runner, usually, where it is not. Trading build-time rendering for a query
+ * per request is cheap here: the backend is one hop away on the internal
+ * network and the queries are small reads.
+ */
+export const dynamic = "force-dynamic";
+
 export default async function WeatherPage() {
   const provinces = await getProvinceWeather();
 

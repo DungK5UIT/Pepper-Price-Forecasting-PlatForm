@@ -15,6 +15,17 @@ import {
   getTodayPrice,
 } from "@/lib/api";
 
+/**
+ * Rendered per request rather than prerendered at build.
+ *
+ * The page reads everything from the backend, so a statically generated build
+ * would need the backend reachable from wherever the image is built — a CI
+ * runner, usually, where it is not. Trading build-time rendering for a query
+ * per request is cheap here: the backend is one hop away on the internal
+ * network and the queries are small reads.
+ */
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const [today, series, stats, regions, provinces, insight] = await Promise.all([
     getTodayPrice(),

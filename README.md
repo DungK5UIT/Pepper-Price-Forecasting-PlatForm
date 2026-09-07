@@ -31,8 +31,12 @@ The internal training endpoint and the actuator detail are behind a machine
 credential ([ADR-0006](docs/adr/0006-internal-api-access.md)); the public read
 API stays open.
 
-Still absent: user accounts, deployment, and anything that actually sends an
-alert when a collection run fails.
+All three services are containerised and run together under
+[`infra/docker/compose.yaml`](infra/docker/compose.yaml), which is also the
+shape to reproduce on a host: one public port, two private services.
+
+Still absent: user accounts, a hosted deployment, and anything that actually
+sends an alert when a collection run fails.
 
 ## Architecture at a Glance
 
@@ -61,6 +65,7 @@ Architecture decisions are recorded in [`docs/adr/`](docs/adr/).
 
 Backend: `cd backend && ./mvnw spring-boot:run` (JDK 21).
 Frontend: `cd frontend && npm install && npm run dev` (Node 20+).
+All three in containers: `docker compose -f infra/docker/compose.yaml --env-file infra/docker/.env up --build`.
 
 Full detail, including tests: [`docs/development/setup.md`](docs/development/setup.md).
 
