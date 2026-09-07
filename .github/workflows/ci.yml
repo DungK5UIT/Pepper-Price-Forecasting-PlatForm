@@ -1,0 +1,86 @@
+name: CI
+
+# Tests and deploys as needs-linked jobs in one file, rather than a
+# separate ci.yml + workflow_run-triggered deploy.yml. workflow_run has a
+# well-known first-run gotcha (it only fires once the triggering workflow
+# already exists on the default branch) and is harder to read end-to-end.
+# For a solo project where the point is that a reader can follow the whole
+# pipeline in one pass, that outweighs the "cleaner" separation on paper.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      # Runs against an in-memory H2 database (application-test.properties)
+      # — no Supabase credentials, no network.
+      - run: ./mvnw -B test
+
+  ml-service-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ml-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: ml-service/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: pytest
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  deploy-backend:
+    needs: backend-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --config infra/fly/backend.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  deploy-ml-service:
+    needs: ml-service-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --config infra/fly/ml-service.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  # No deploy-frontend job: Vercel's Git integration deploys the frontend
+  # independently of this workflow. See docs/adr/0007-hosted-deployment.md.
