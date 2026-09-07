@@ -8,10 +8,11 @@ it loads from disk.
 from __future__ import annotations
 
 import logging
+import os
 from functools import lru_cache
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 
 from . import model as model_module
 from .forecasting import generate
@@ -21,11 +22,27 @@ logger = logging.getLogger(__name__)
 
 ARTIFACT_PATH = Path(__file__).parent / "artifacts" / "forecast_model.joblib"
 
+# This service now runs as its own public deployment with no private network
+# to rely on instead (ADR-0008), so /internal/v1/forecast checks this shared
+# secret to keep ADR-0002's "only the backend calls this" true in practice.
+# No default: a blank fallback is how an internal endpoint ends up open.
+try:
+    INTERNAL_TOKEN = os.environ["ML_SERVICE_TOKEN"]
+except KeyError as error:
+    raise RuntimeError(
+        "ML_SERVICE_TOKEN is not set. See ml-service/.env.example."
+    ) from error
+
 app = FastAPI(
     title="Pepper price ML service",
     description="Internal forecasting API consumed by the Java backend.",
     version="0.1.0",
 )
+
+
+def verify_token(x_internal_token: str = Header(default="")) -> None:
+    if x_internal_token != INTERNAL_TOKEN:
+        raise HTTPException(status_code=401, detail="Missing or invalid X-Internal-Token")
 
 
 @lru_cache(maxsize=1)
@@ -48,7 +65,7 @@ def health() -> dict[str, str]:
     return {"status": "UP", "modelVersion": loaded.version, "strategy": loaded.strategy}
 
 
-@app.post("/internal/v1/forecast", response_model=ForecastResponse)
+@app.post("/internal/v1/forecast", response_model=ForecastResponse, dependencies=[Depends(verify_token)])
 def forecast(request: ForecastRequest) -> ForecastResponse:
     try:
         loaded = load_model()

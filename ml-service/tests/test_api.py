@@ -1,3 +1,4 @@
+import os
 from datetime import date, timedelta
 
 import pytest
@@ -31,13 +32,18 @@ def history():
 @pytest.fixture
 def client(history, tmp_path, monkeypatch):
     """A client backed by a model trained in-process, so the tests do not
-    depend on whichever artifact happens to be committed."""
+    depend on whichever artifact happens to be committed.
+
+    Carries the internal token on every request by default (ADR-0008) — the
+    auth check itself is exercised separately, below, with clients that
+    don't set it.
+    """
     features = compute_features(build_monthly_frame(history))
     model = train(features, strategy="gbm", version="test-model")
 
     main.load_model.cache_clear()
     monkeypatch.setattr(main, "load_model", lambda: model)
-    return TestClient(main.app)
+    return TestClient(main.app, headers={"X-Internal-Token": os.environ["ML_SERVICE_TOKEN"]})
 
 
 def request_body(history, **overrides):
@@ -106,3 +112,19 @@ def test_reports_degraded_when_no_model_is_trained(monkeypatch, tmp_path):
 
     assert response.json()["status"] == "DEGRADED"
     main.load_model.cache_clear()
+
+
+def test_forecast_refuses_a_caller_with_no_token(history):
+    """The gap ADR-0008 closes: this service now runs publicly, with no
+    private network standing in for a credential."""
+    response = TestClient(main.app).post("/internal/v1/forecast", json=request_body(history))
+
+    assert response.status_code == 401
+
+
+def test_health_stays_open_with_no_token():
+    """An uptime check has to work without a credential, same as the
+    backend's /actuator/health (ADR-0006)."""
+    response = TestClient(main.app).get("/health")
+
+    assert response.status_code == 200

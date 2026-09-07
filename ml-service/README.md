@@ -40,6 +40,8 @@ python -m venv .venv && .venv/Scripts/activate   # or source .venv/bin/activate
 pip install -r requirements-dev.txt
 
 pytest                                            # no network, no credentials
+
+export ML_SERVICE_TOKEN=...   # see .env.example — required, no default
 python -m uvicorn ml_service.main:app --port 8000
 curl http://localhost:8000/health
 ```
@@ -72,6 +74,11 @@ strategy was selected, and how much history it was trained on.
 ## Internal API
 
 `POST /internal/v1/forecast` — called by the backend, never by a browser.
+Requires an `X-Internal-Token` header matching `ML_SERVICE_TOKEN`; without
+it, or with the wrong value, the response is 401 (ADR-0008 — this service
+now runs as its own public deployment, with no private network standing in
+for a credential). `GET /health` stays open, for the same reason
+`/actuator/health` does on the backend (ADR-0006).
 
 ```json
 { "asOfDate": "2026-09-01", "anchorPrice": 135700,
