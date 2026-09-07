@@ -1,7 +1,13 @@
 # ADR-0007: Hosted Deployment — Vercel and Fly.io
 
-- **Status**: Accepted
+- **Status**: Superseded by [ADR-0008](0008-render-and-external-scheduling.md)
 - **Date**: 2026-09-07
+
+Fly.io now requires a payment method on file to create an account, which
+this project doesn't have and isn't getting one for. The plan below was
+sound and is left as-written — it's an accurate record of a real decision,
+not a mistake — but it was never deployed. See ADR-0008 for what replaced
+it.
 
 ## Context
 

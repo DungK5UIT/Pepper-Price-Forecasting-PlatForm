@@ -17,14 +17,18 @@ credentials to configure.
 
 ## Backend
 
-Needs two credentials — copy `backend/.env.example` to `backend/.env` and fill
-in both. `.env` is git-ignored.
+Needs three credentials — copy `backend/.env.example` to `backend/.env` and
+fill them in. `.env` is git-ignored.
 
 - `SUPABASE_DB_PASSWORD` — Project Settings → Database → Connection string →
   **Session pooler**.
 - `INTERNAL_API_PASSWORD` — any long random string you generate
   (`openssl rand -base64 32`). It guards `/internal/**`; there is no default,
   so the application will not start until it is set.
+- `APP_MLSERVICE_TOKEN` — same kind of value, generated the same way. Sent to
+  the ML service on every forecast call; the same value has to be set as
+  `ML_SERVICE_TOKEN` in the ML service's own environment (below), or every
+  call gets a 401.
 
 ```bash
 cd backend
@@ -64,6 +68,8 @@ Point it at a different backend with `API_BASE_URL` (see
 cd ml-service
 pip install -r requirements-dev.txt
 pytest                                            # no credentials needed
+
+export ML_SERVICE_TOKEN=...   # same value as backend/.env's APP_MLSERVICE_TOKEN
 python -m uvicorn ml_service.main:app --port 8000
 ```
 
@@ -83,9 +89,9 @@ service when it refreshes forecasts, and keeps serving the stored run if it is
 down.
 
 ```bash
-cd backend    && ./mvnw spring-boot:run                        # terminal 1
-cd ml-service && python -m uvicorn ml_service.main:app --port 8000   # terminal 2
-cd frontend   && npm run dev                                   # terminal 3
+cd backend    && ./mvnw spring-boot:run                              # terminal 1
+cd ml-service && export ML_SERVICE_TOKEN=... && python -m uvicorn ml_service.main:app --port 8000   # terminal 2
+cd frontend   && npm run dev                                         # terminal 3
 ```
 
 To do a morning's work immediately instead of waiting for the schedule:
@@ -106,7 +112,7 @@ The three terminals above are the fast loop for editing code. To run the
 platform the way it is deployed:
 
 ```bash
-cp infra/docker/.env.example infra/docker/.env    # fill in both passwords
+cp infra/docker/.env.example infra/docker/.env    # fill in the values
 docker compose -f infra/docker/compose.yaml --env-file infra/docker/.env up --build
 ```
 
@@ -119,13 +125,22 @@ would.
 
 ## Daily schedule
 
-The backend runs these on its own once it is up, all times local:
+The backend does not run these on its own — a GitHub Actions schedule
+(`.github/workflows/scheduled-jobs.yml`) calls them once a day, since the
+hosted backend sleeps when idle and an in-process cron would silently stop
+firing (ADR-0008). Locally, trigger the same endpoints by hand:
 
-| Time | Job | What it does |
-|---|---|---|
-| 07:00 | `price_ingestion` | Scrapes today's regional prices, falls back to a second site |
-| 07:10 | `weather_ingestion` | Reads Open-Meteo for the six growing provinces |
-| 08:15 | forecast refresh | Calls the ML service and stores the run |
+```bash
+curl -X POST -u "$INTERNAL_API_USER:$INTERNAL_API_PASSWORD" \
+  http://localhost:8080/internal/v1/jobs/ingest-price      # regional prices, falls back to a second site
+curl -X POST -u "$INTERNAL_API_USER:$INTERNAL_API_PASSWORD" \
+  http://localhost:8080/internal/v1/jobs/ingest-weather    # Open-Meteo, six growing provinces
+curl -X POST -u "$INTERNAL_API_USER:$INTERNAL_API_PASSWORD" \
+  http://localhost:8080/internal/v1/jobs/refresh-forecast  # calls the ML service, stores the run
+```
+
+or use `--app.ingest.run-on-startup=true` / `--app.forecast.refresh-on-startup=true`
+(above) to run them once as part of booting the backend.
 
 Every collection attempt lands in `ingestion_run` with a status and a detail.
 You do not have to query it by hand:

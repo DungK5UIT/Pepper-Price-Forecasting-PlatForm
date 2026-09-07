@@ -81,11 +81,13 @@ the project's "prove need before building" principle.
 
 ### Infra (`infra/`)
 Docker Compose definitions for running the stack locally (`infra/docker/`)
-and Fly.io deploy configuration for the hosted backend and ML service
-(`infra/fly/`) — see [ADR-0007](../adr/0007-hosted-deployment.md). GitHub
-Actions workflow files live at `.github/workflows/`, not here, because
-GitHub requires that location; `infra/` still owns the deploy-target config
-those workflows invoke.
+and a Render Blueprint for the hosted backend and ML service
+(`infra/render/`) — see [ADR-0008](../adr/0008-render-and-external-scheduling.md).
+GitHub Actions workflow files live at `.github/workflows/`, not here,
+because GitHub requires that location: one runs tests, the other triggers
+the daily jobs by calling the deployed backend directly (ADR-0008) — neither
+invokes anything under `infra/`, unlike the superseded Fly.io plan where CI
+called `flyctl deploy` against `infra/fly/*.toml`.
 
 ## Processing Model
 
@@ -99,6 +101,6 @@ calls impractical.
 
 Explicitly not part of Phase 0, added only when justified by real
 next-step work: Redis, object storage (e.g. MinIO). Docker Compose, CI, and
-hosted deployment (Vercel + Fly.io — see
-[ADR-0007](../adr/0007-hosted-deployment.md)) are no longer deferred: see
-`infra/docker/`, `.github/workflows/`, and `infra/fly/`.
+hosted deployment (Vercel + Render — see
+[ADR-0008](../adr/0008-render-and-external-scheduling.md)) are no longer
+deferred: see `infra/docker/`, `.github/workflows/`, and `infra/render/`.
