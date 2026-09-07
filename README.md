@@ -35,8 +35,12 @@ All three services are containerised and run together under
 [`infra/docker/compose.yaml`](infra/docker/compose.yaml), which is also the
 shape to reproduce on a host: one public port, two private services.
 
-Still absent: user accounts, a hosted deployment, and anything that actually
-sends an alert when a collection run fails.
+Both the backend/ML service (Fly.io) and the frontend (Vercel) deploy from
+this repo — see [ADR-0007](docs/adr/0007-hosted-deployment.md) and
+[`infra/fly/README.md`](infra/fly/README.md).
+
+Still absent: user accounts, and anything that actually sends an alert when
+a collection run fails.
 
 ## Architecture at a Glance
 

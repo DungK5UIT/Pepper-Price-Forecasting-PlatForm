@@ -80,8 +80,12 @@ genuinely needs to run out-of-band). Adding it speculatively would violate
 the project's "prove need before building" principle.
 
 ### Infra (`infra/`)
-Docker Compose definitions and CI configuration for running the stack
-locally and building it in CI. Empty until there are services to compose.
+Docker Compose definitions for running the stack locally (`infra/docker/`)
+and Fly.io deploy configuration for the hosted backend and ML service
+(`infra/fly/`) — see [ADR-0007](../adr/0007-hosted-deployment.md). GitHub
+Actions workflow files live at `.github/workflows/`, not here, because
+GitHub requires that location; `infra/` still owns the deploy-target config
+those workflows invoke.
 
 ## Processing Model
 
@@ -94,5 +98,7 @@ calls impractical.
 ## Deferred Infrastructure
 
 Explicitly not part of Phase 0, added only when justified by real
-next-step work: Redis, Docker Compose files, CI pipelines, object storage
-(e.g. MinIO), reverse proxy/HTTPS termination, cloud deployment topology.
+next-step work: Redis, object storage (e.g. MinIO). Docker Compose, CI, and
+hosted deployment (Vercel + Fly.io — see
+[ADR-0007](../adr/0007-hosted-deployment.md)) are no longer deferred: see
+`infra/docker/`, `.github/workflows/`, and `infra/fly/`.
