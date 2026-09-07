@@ -1,0 +1,61 @@
+# Backend and ML service on Render.com. Deployed as a Blueprint — connect
+# this repo in the Render dashboard and point it at this file (Render's
+# default lookup is the repo root; this path is a one-time dashboard
+# setting). See infra/render/README.md and docs/adr/0008-render-and-external-scheduling.md.
+#
+# No PostgreSQL service here either, same as infra/docker/compose.yaml: the
+# database is Supabase.
+#
+# The frontend is not here — it deploys through Vercel's native Git
+# integration, not Render.
+
+services:
+  - type: web
+    name: giatieuviet-ml-service
+    runtime: docker
+    plan: free
+    region: singapore # matches Supabase's ap-southeast-1
+    dockerfilePath: ml-service/Dockerfile
+    dockerContext: ml-service
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      # Checked against every /internal/v1/forecast call — see main.py and
+      # ADR-0008. Same value as the backend's APP_MLSERVICE_TOKEN below.
+      - key: ML_SERVICE_TOKEN
+        sync: false
+
+  - type: web
+    name: giatieuviet-backend
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    healthCheckPath: /actuator/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: SUPABASE_DB_URL
+        sync: false
+      - key: SUPABASE_DB_USER
+        sync: false
+      - key: SUPABASE_DB_PASSWORD
+        sync: false
+      - key: INTERNAL_API_USER
+        sync: false
+      - key: INTERNAL_API_PASSWORD
+        sync: false
+      - key: APP_MLSERVICE_TOKEN
+        sync: false
+      # Render's free plan has no Private Service and free web services
+      # can't receive private-network traffic anyway (ADR-0008) — this has
+      # to be the public URL, not an internal hostname. Render normally
+      # assigns the service name verbatim; confirm it after first deploy
+      # (see infra/render/README.md) and fix this if a name collision
+      # changed it.
+      - key: APP_MLSERVICE_BASEURL
+        value: https://giatieuviet-ml-service.onrender.com
+      # Placeholder until the Vercel project exists and its real domain is
+      # known — one follow-up edit, see infra/render/README.md.
+      - key: APP_CORS_ALLOWED_ORIGINS
+        value: https://giatieuviet.vercel.app

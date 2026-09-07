@@ -25,6 +25,13 @@ services:
   ml-service:
     build:
       context: ../../ml-service
+    environment:
+      # Checked against every /internal/v1/forecast call (ADR-0008) — on
+      # this network it's redundant with the port never being published,
+      # but the service requires it regardless, so it can't drift from
+      # what's required in a real deployment. Same value as the backend's
+      # APP_MLSERVICE_TOKEN below.
+      ML_SERVICE_TOKEN: ${ML_SERVICE_TOKEN:?set it in infra/docker/.env}
     # No `ports`. Compose puts every service on a shared network where they
     # resolve each other by name, so the backend reaches this at
     # http://ml-service:8000 without any of it being exposed.
@@ -39,6 +46,7 @@ services:
       SUPABASE_DB_PASSWORD: ${SUPABASE_DB_PASSWORD:?set it in infra/docker/.env}
       INTERNAL_API_USER: ${INTERNAL_API_USER:?set it in infra/docker/.env}
       INTERNAL_API_PASSWORD: ${INTERNAL_API_PASSWORD:?set it in infra/docker/.env}
+      APP_MLSERVICE_TOKEN: ${ML_SERVICE_TOKEN:?set it in infra/docker/.env}
       # Spring's relaxed binding: app.ml-service.base-url. Hyphens are
       # dropped, dots become underscores.
       APP_MLSERVICE_BASEURL: http://ml-service:8000
