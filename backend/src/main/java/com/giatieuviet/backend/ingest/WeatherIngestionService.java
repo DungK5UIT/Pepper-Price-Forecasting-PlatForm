@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -53,11 +52,6 @@ public class WeatherIngestionService {
         if (ingestOnStartup) {
             ingestQuietly();
         }
-    }
-
-    @Scheduled(cron = "${app.ingest.weather.cron:0 10 7 * * *}", zone = "${app.time-zone}")
-    public void ingestOnSchedule() {
-        ingestQuietly();
     }
 
     /** Weather being unavailable leaves the price series, and the forecast, untouched. */

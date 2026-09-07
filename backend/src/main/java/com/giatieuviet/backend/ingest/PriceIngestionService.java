@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -57,9 +56,8 @@ public class PriceIngestionService {
      * should not depend on two public websites being up, so it is opt-in.
      *
      * Ordered so a local run reproduces the morning's real sequence: prices,
-     * then weather, then the forecast that reads them. The crons already
-     * space these out; {@code ApplicationReadyEvent} listeners have no
-     * inherent order.
+     * then weather, then the forecast that reads them. {@code
+     * ApplicationReadyEvent} listeners have no inherent order otherwise.
      */
     @Order(1)
     @EventListener(ApplicationReadyEvent.class)
@@ -69,16 +67,10 @@ public class PriceIngestionService {
         }
     }
 
-    /** Early enough that the forecast refresh, later the same morning, sees today's price. */
-    @Scheduled(cron = "${app.ingest.price.cron:0 0 7 * * *}", zone = "${app.time-zone}")
-    public void ingestOnSchedule() {
-        ingestQuietly();
-    }
-
     /**
-     * Collection failing is not a reason to fail a boot or kill the schedule:
-     * yesterday's prices keep serving, and the run is logged as failed so the
-     * gap is visible.
+     * Collection failing is not a reason to fail a boot or the caller that
+     * triggered this: yesterday's prices keep serving, and the run is logged
+     * as failed so the gap is visible.
      */
     public int ingestQuietly() {
         try {

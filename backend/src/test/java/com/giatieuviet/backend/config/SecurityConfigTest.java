@@ -82,4 +82,20 @@ class SecurityConfigTest {
     void anUnlistedActuatorEndpointIsClosedByDefault() {
         assertThat(mvc.get().uri("/actuator/env")).hasStatus(401);
     }
+
+    /**
+     * The job-trigger endpoints (ADR-0008) fall under the same
+     * {@code /internal/**} rule as {@code /internal/v1/price-history} — this
+     * only asserts the 401, not the 200, so this test never actually runs
+     * ingestion or a forecast refresh against the network. Success-path
+     * behaviour is covered by
+     * {@link com.giatieuviet.backend.internal.JobTriggerControllerTest}
+     * instead, with the services mocked out.
+     */
+    @Test
+    void theJobTriggerEndpointsRefuseAnAnonymousCaller() {
+        assertThat(mvc.post().uri("/internal/v1/jobs/ingest-price")).hasStatus(401);
+        assertThat(mvc.post().uri("/internal/v1/jobs/ingest-weather")).hasStatus(401);
+        assertThat(mvc.post().uri("/internal/v1/jobs/refresh-forecast")).hasStatus(401);
+    }
 }

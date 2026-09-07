@@ -23,12 +23,18 @@ public class MlForecastClient {
 
     private final RestClient restClient;
 
-    public MlForecastClient(RestClient.Builder builder, @Value("${app.ml-service.base-url}") String baseUrl) {
+    public MlForecastClient(RestClient.Builder builder,
+                             @Value("${app.ml-service.base-url}") String baseUrl,
+                             @Value("${app.ml-service.token}") String token) {
         // Pinned to HTTP/1.1: the JDK client otherwise opens with an h2c upgrade
         // request, which uvicorn rejects — and the body is lost with it.
         HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
         this.restClient = builder
                 .baseUrl(baseUrl)
+                // The ML service now runs as its own public deployment with no
+                // private network to rely on instead (ADR-0008); this is what
+                // keeps ADR-0002's "only the backend calls this" true in practice.
+                .defaultHeader("X-Internal-Token", token)
                 .requestFactory(new JdkClientHttpRequestFactory(httpClient))
                 .build();
     }
