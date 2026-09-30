@@ -1,0 +1,45 @@
+# Risk Register
+
+| Version | Date | Change |
+|---|---|---|
+| 1.0 | 2026-09-30 | First version, from a full review of the code, tests and deployment at commit `c0ad2f0`. |
+
+What can go wrong, how we would find out, and what we do about it.
+Requirements and test cases referenced here are in
+[`requirements.md`](requirements.md) and [`test-cases.md`](test-cases.md).
+
+**Likelihood / Impact:** H high · M medium · L low.
+**Status:** *Open* (not handled yet) · *Mitigated* (handled, some residue)
+· *Accepted* (known and deliberately left).
+
+## Open
+
+| ID | Risk (bad case) | L | I | Detected today by | Handling | Status |
+|---|---|---|---|---|---|---|
+| RISK-01 | **A daily job fails silently.** `ingestQuietly()` / `refreshQuietly()` catch the failure and the job endpoints still answer `200`, so the GitHub Actions run is green. Forecast refresh is not in the health check at all. Nothing sends an alert. The forecast can stand still for days unnoticed. | H | H | `/actuator/health` shows `STALE` for ingestion only, and only if someone reads the body | Return non-2xx (or `status: failed`) when a job fails so the workflow fails and GitHub emails the owner; log forecast refreshes to `ingestion_run` and add them to the health check. TC-67. | Open |
+| RISK-02 | **An outbound call hangs.** No connect/read timeout on the scraping, Open-Meteo or ML-service clients. A site that accepts the connection and never answers holds the job until the caller gives up. | M | H | Nothing | Timeouts on every client (NFR-04). TC-68. | Open |
+| RISK-03 | **The ML service is asleep when the forecast refresh runs.** Both Render services sleep after 15 minutes idle; the workflow wakes only the backend, so the refresh pays the ML cold start inside a call with no timeout. | H | M | Nothing (see RISK-01) | Add a wake-up step for the ML service's `/health` to the workflow; retry the refresh once. | Open |
+| RISK-04 | **Monthly forecast labelled one month early.** The model predicts the move from the current (partial) month's row to the *next* month but labels it the *current* month's end. With a synthetic +2%/month series, the +2% point is dated 11 days ahead instead of 39 (end of next month). The naive model that ships keeps the median unchanged, so today only the monthly band is too wide; once a model beats the baseline, its dates are wrong. | H | M | Nothing — TC-43 asserts the current labels | Label horizon *h* as the end of month *m+h* where *m* is the last monthly row; add a regression test with a trending series. | Open |
+| RISK-05 | **The numbers users see are untested.** `DatabasePriceService` and `DatabaseWeatherService` have no tests (controller tests mock them); the naive strategy that ships has no test; `train.py` is 0% covered; backend coverage is not measured; migrations never run in tests (H2 with `create-drop`). | H | M | Code review only | Write TC-02…TC-14, TC-47, TC-53; add JaCoCo and `--cov-branch` to CI; run migrations against PostgreSQL (Testcontainers). | Open |
+| RISK-07 | **The site says things that are not true.** The hero text and page metadata say the forecast combines weather and the USD/VND rate; the weather page says weather feeds the model; the model uses neither (ADR-0004). "Cập nhật 08:00" is hard-coded; the job runs at 07:00 and can lag. The market commentary is prototype data that nothing updates. | H | M | Nothing | Correct the copy to what the model does; derive the update time from the data; decide OQ-1 for the commentary. | Open |
+| RISK-08 | **An empty table takes the whole dashboard down.** No price or no commentary → `IllegalStateException` → `500`; the page loads all sections with one `Promise.all`, so one `500` shows the error page instead of the other five sections. | L | M | Error page | Return `404`/empty for missing data; let each section fail on its own. | Open |
+| RISK-09 | **GitHub disables the daily schedule.** Scheduled workflows are turned off after 60 days without repository activity. Last commit before this document: 2026-09-07. | M | H | GitHub email to the owner | Keep committing; the manual *Run workflow* button is the backstop. | Open |
+| RISK-11 | **Whole history read on every request.** Every public price endpoint loads the full national series (2005 → today); the regional endpoint loads every regional row ever stored. Fine at a few thousand rows, linear growth after. | L | L | Nothing | Query only the rows needed (`ORDER BY … LIMIT`). | Open |
+| RISK-12 | **Any `IllegalArgumentException` becomes a 400 with its message.** The handler meant for bad `granularity` values catches every `IllegalArgumentException`, including ones thrown by libraries, whose messages were not written for callers. | L | L | Nothing | A named domain exception for invalid input. | Open |
+
+## Mitigated or accepted
+
+| ID | Risk (bad case) | L | I | Handling | Status |
+|---|---|---|---|---|---|
+| RISK-06 | **A price site changes layout or disappears.** | M | H | Parse refuses unrecognisable pages and implausible prices (FR-09), the second site is read every run (FR-10), the run is logged and health goes `STALE`. Residue: the sites share an upstream, and a missed day cannot be backfilled. | Mitigated |
+| RISK-10 | **Free-tier limits.** Render free instances sleep and share 750 instance-hours/month; free plans and their policies can change. | M | M | Two sleeping services fit the hours (ADR-0008); health checks show the state. | Accepted |
+| RISK-13 | **Legacy prototype tables in the same database have RLS disabled.** | L | M | Only the backend connects, server-side; no anon key is shipped. Close it if a client ever gets a Supabase key. | Accepted |
+| RISK-14 | **Two scheduler runs at once.** | L | L | Writes are idempotent; a unique-key clash fails one run, which is logged. | Accepted |
+| RISK-15 | **The model artifact goes stale.** Training is manual and the artifact is committed. | M | L | The naive model depends only on long-run volatility; `/health` shows the loaded version. Decide a cadence (OQ-5). | Accepted |
+| RISK-16 | **Docs and agent instructions drift from the code.** Found: `AGENTS.md` pointing at a non-existent path, READMEs describing removed crons and mock data. | M | L | Fixed alongside this document; docs are part of "done" for every change. | Mitigated |
+
+## Release readiness
+
+The system does its job on a normal day. It is not ready to be trusted
+unattended until RISK-01, RISK-02 and RISK-03 are closed: together they mean
+a bad morning produces a stale forecast and a green checkmark.
