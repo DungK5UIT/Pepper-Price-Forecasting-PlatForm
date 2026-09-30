@@ -72,6 +72,13 @@ the backend calls this).
 - **`APP_MLSERVICE_TOKEN` and `ML_SERVICE_TOKEN` must be the same string**
   on both services — there's no cross-check at deploy time, only a 401 at
   request time if they drift.
+- **Supabase's pooler drops a TLS handshake not finished within about
+  2 s**, and on the free CPU a freshly started JVM's first handshake is
+  slower than that: the boot failed with `SSL error: Broken pipe` /
+  `Remote host terminated the handshake` while the same connection worked
+  from a laptop. The backend retries its first connection for 60 s
+  (`spring.datasource.hikari.initialization-fail-timeout`); forcing TLS 1.2
+  did not help.
 - **The backend writes to the real Supabase database** on every deploy
   (Flyway migrations) and every triggered job. Same as the Fly and Docker
   Compose plans.
