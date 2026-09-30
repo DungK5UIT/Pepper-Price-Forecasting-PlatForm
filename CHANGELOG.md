@@ -3,7 +3,11 @@
 Notable changes, newest first, grouped by milestone. There are no release
 tags yet; dates are when the work landed on `main`.
 
-## Unreleased
+## 2026-09-30 — Live on free hosting
+
+### Added
+- Live deployment: frontend on Vercel, backend and ML service on Render
+  (ADR-0008), with the daily jobs running from GitHub Actions.
 
 ### Documentation
 - Requirements (35 functional, 13 non-functional), test-case traceability
@@ -15,6 +19,17 @@ tags yet; dates are when the work landed on `main`.
 - Removed the empty `db/`, `scripts/` and `tests/` root directories (ADR-0001 update).
 
 ### Fixed
+- Backend CI ran no tests since 2026-09-07: `mvnw` was committed without
+  its executable bit, so every Linux run stopped with exit code 126.
+- A failed daily job now fails the scheduled run (`502`/`500`) instead of
+  answering `200` (RISK-01).
+- The schedule wakes the ML service before the forecast refresh and retries
+  the refresh (RISK-03).
+- The backend retries its first database connection for 60 s: Supabase's
+  pooler drops a TLS handshake slower than about 2 s, and a cold JVM on
+  Render's free CPU is slower than that (RISK-17).
+- Next.js 16.3.4 → 16.3.7: 16.3.0–16.3.4 with standalone output broke
+  Vercel's packaging step.
 - The website no longer claims the forecast uses weather or the USD/VND rate,
   no longer shows a hard-coded "08:00" update time, and no longer calls the
   static market commentary machine-generated (RISK-07).

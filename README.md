@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/DungK5UIT/Pepper-Price-Forecasting-PlatForm/actions/workflows/ci.yml/badge.svg)](https://github.com/DungK5UIT/Pepper-Price-Forecasting-PlatForm/actions/workflows/ci.yml)
 
+**Live demo:** <https://pepper-price-forecasting-plat-form.vercel.app> —
+hosted on free tiers, so the first load after a quiet spell can take up to a
+minute while the backend wakes.
+
 A three-service platform that collects the daily domestic price of
 Vietnamese black pepper (tiêu) and the weather in its growing provinces, and
 publishes a short-term price forecast with an honest uncertainty band.
@@ -130,14 +134,14 @@ docs/         requirements, test cases, risks, ADRs, API, database, architecture
 
 ## Status and next steps
 
-All three services run on real data. Next, in order
-([risk register](docs/risks.md)):
+All three services are deployed — the frontend on Vercel, the backend and
+ML service on Render, PostgreSQL on Supabase — and run on data collected
+every morning. Next, in order ([risk register](docs/risks.md)):
 
-1. Make a failed daily job fail visibly, add timeouts to every outbound
-   call, and wake the ML service before the forecast refresh (RISK-01–03).
+1. Add a timeout to every outbound call (RISK-02).
 2. Test the calculations behind the public numbers and measure coverage (RISK-05).
-3. Fix the monthly forecast dates (RISK-04) and the site copy that
-   overstates the model (RISK-07).
+3. Fix the monthly forecast dates (RISK-04) and decide whether the market
+   commentary is generated or removed (OQ-1).
 
 Development is AI-assisted under a written workflow — see
 [CONTRIBUTING.md](CONTRIBUTING.md); commits made with an AI model say so.
