@@ -1,50 +1,56 @@
-# Pepper Price Forecasting Platform
+# Pepper Price Forecasting Platform — brief for coding agents
 
-Production-oriented forecasting platform for Vietnamese black pepper (tiêu)
-prices. Simultaneously a real product and a long-term software engineering
-learning project — architecture, testing, Git history, and deployment
-practice are treated as first-class, not incidental.
+A forecasting platform for Vietnamese black pepper (tiêu) prices: it collects
+the daily domestic price and the weather in the growing provinces, keeps the
+history, and publishes a short-term forecast with an honest uncertainty band.
+It is also a long-term software-engineering portfolio project, so
+architecture, tests, Git history and documentation are part of the product.
 
-Global engineering workflow, git conventions, testing philosophy, and
-review standards come from the Software Engineer OS (`~/.Codex`, sourced
-from `D:\Codex\Software-Engineer-OS`) and apply here without restatement.
+## Where things are
 
-## Current Phase
+| Path | What |
+|---|---|
+| `frontend/` | Next.js + TypeScript. Server-renders two pages from the backend's public API. |
+| `backend/` | Spring Boot 4.1, Java 21. Public API, access control, schema (Flyway, `src/main/resources/db/migration/`), daily collection, forecast orchestration. |
+| `ml-service/` | FastAPI, Python 3.13. Stateless forecasting; training CLI. |
+| `infra/` | Docker Compose (local), Render Blueprint (hosted). |
+| `.github/workflows/` | CI (tests for all three) and the daily job trigger. |
+| `docs/requirements.md` | What the system must do — FR/NFR with IDs. |
+| `docs/test-cases.md` | Which test verifies which requirement, and what is missing. |
+| `docs/risks.md` | Known risks and their status. |
+| `docs/adr/` | Every significant decision, with alternatives. |
+| `docs/api/`, `docs/database/`, `docs/architecture/` | API contract, schema, system design. |
 
-Phase 1 — all three services running on real data. `frontend/` (Next.js)
-fetches from `backend/` (Spring Boot 4.1 + Java 21) over the contract in
-`docs/api/README.md`; the backend reads PostgreSQL on Supabase (schema owned by
-Flyway migrations in `backend/src/main/resources/db/migration/`) and calls
-`ml-service/` (FastAPI) to regenerate forecasts, which it persists.
+## Commands
 
-The forecasting model is deliberately modest and measured against a naive
-baseline — see `docs/adr/0004-forecasting-model.md`; the baseline currently
-wins and is what ships.
+```bash
+cd backend    && ./mvnw test        # mvnw.cmd on Windows; H2, no credentials
+cd ml-service && pytest             # no network, no credentials
+cd frontend   && npm run lint && npm run build
+```
 
-Prices and weather are collected daily by the backend itself (ADR-0005),
-ahead of the forecast refresh that consumes them; every attempt is logged to
-`ingestion_run`.
+Running locally and the credentials each service needs:
+`docs/development/setup.md`.
 
-`/internal/**` and the actuator detail sit behind a machine credential
-(ADR-0006); the public read API stays open.
+## Current state
 
-Not built yet: user accounts, deployment, and anything that actually sends an
-alert when a collection run fails.
+All three services run on real data, with PostgreSQL on Supabase.
+Deployment is configured for Vercel (frontend) and Render's free plan
+(backend, ML service) — `infra/render/README.md`. A GitHub Actions schedule
+triggers price collection, weather collection and the forecast refresh every
+morning at 07:00 Vietnam time (ADR-0008). The naive baseline
+beats the gradient-boosting model and is what ships (ADR-0004). Open risks —
+start with RISK-01 to RISK-05 — are in `docs/risks.md`.
 
-See `docs/architecture/` for system design and `docs/adr/` for recorded
-decisions.
+## Rules
 
-## Stack Direction
-
-- Frontend: Next.js + TypeScript
-- Backend: Java + Spring Boot + Spring Data JPA + PostgreSQL
-- ML service: Python + FastAPI + pandas/NumPy/scikit-learn
-- Infra: Docker Compose, Redis (introduced only on proven need)
-
-## Boundaries (see ADRs for rationale)
-
-- Frontend calls only the Java backend's public API — never Postgres or the
-  ML service directly.
-- The Java backend owns the schema, migrations, and all persistence.
-- The Python ML service has no direct database access; it exchanges data
-  with the Java backend through an internal API.
+- Work the way `CONTRIBUTING.md` describes: understand → plan (risks, test
+  cases) → build under coding rules R1–R13 → review, static analysis, unit,
+  integration.
+- Boundaries: the frontend calls only the backend's public API; the backend
+  owns the schema and all persistence; the ML service has no database access
+  (ADR-0002, ADR-0003).
+- A behaviour change updates `docs/requirements.md` and `docs/test-cases.md`
+  in the same PR; a significant decision gets an ADR.
+- Never commit `.env` files or credentials. Every credential is required at
+  startup and has no default.
