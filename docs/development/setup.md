@@ -56,8 +56,8 @@ npm run lint
 ```
 
 The frontend reads everything from the backend (`src/lib/api.ts`), so
-**the backend must be running** or pages fall back to their error state —
-including during `npm run build`, which prerenders them.
+**the backend must be running** or pages fall back to their error state.
+`npm run build` does not need it: both pages render per request.
 
 Point it at a different backend with `API_BASE_URL` (see
 `frontend/.env.example`); it defaults to `http://localhost:8080`.
@@ -157,4 +157,6 @@ healthy — when a job has been quiet for more than 26 hours. See
 
 ## Not applicable yet
 
-Redis and full-stack orchestration land with the components that need them.
+Redis lands only when a measured need appears (see
+[`../architecture/overview.md`](../architecture/overview.md), "Deferred
+Infrastructure").

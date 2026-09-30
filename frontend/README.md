@@ -10,34 +10,38 @@ the ML service — all data and computation come through the backend's API.
 
 ## Status
 
-Scaffolded with `create-next-app` (TypeScript, Tailwind CSS v4, App
-Router). Two routes are implemented against **mock data** — the Java
-backend does not exist yet, so `src/lib/mock-data.ts` stands in for it.
-Every function there is shaped like a future API response and is the only
-place that needs to change once real endpoints exist.
+Two server-rendered routes, both reading the backend's public API
+(`docs/api/README.md`) through `src/lib/api.ts`:
 
-- `/` — price dashboard: today's price, a day/week/month forecast chart,
-  regional prices, and a compact weather snapshot.
-- `/weather` — 7-day weather detail for the 6 key pepper-growing
-  provinces.
+- `/` — price dashboard: today's price and week-ahead range, a
+  day/week/month forecast chart, period stats, regional prices, a compact
+  weather snapshot and the market commentary.
+- `/weather` — 7-day weather for the six pepper-growing provinces.
+
+Fetches run on the server and are cached for 5 minutes; the browser never
+calls the backend. If the backend fails, `src/app/error.tsx` shows a reload
+page.
 
 ## Development
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000
-npm run build
+npm run dev      # http://localhost:3000 — needs the backend on :8080
 npm run lint
+npm run build    # does not need the backend: pages render per request
 ```
+
+`API_BASE_URL` points at the backend (default `http://localhost:8080`, see
+`.env.example`).
 
 ## Structure
 
 ```
 src/
-  app/            # routes (page.tsx per route), root layout, global CSS
-  components/      # presentational + a few client components (charts, toggles)
-  lib/            # types.ts (shared shapes) + mock-data.ts (placeholder data layer)
-  assets/images/   # locally-sourced photos (Unsplash, free license), statically imported
+  app/            # routes (page.tsx per route), root layout, error page, global CSS
+  components/     # presentational components + the chart and granularity switch
+  lib/            # api.ts (backend client), types.ts (API shapes), format.ts (VND, %, dates)
+  assets/images/  # locally stored photos (Unsplash, free licence), statically imported
 ```
 
 ## Design system

@@ -69,25 +69,23 @@ src/main/resources/db/migration/   Flyway migrations
 | `SUPABASE_DB_URL` | — | JDBC URL, session pooler (port 5432) |
 | `SUPABASE_DB_USER` | — | Database user |
 | `SUPABASE_DB_PASSWORD` | — | Database password — from `.env`, never committed |
-| `INTERNAL_API_USER` | — | Username the ML service presents to `/internal/**` |
+| `INTERNAL_API_USER` | — | Username for `/internal/**` (training CLI, daily scheduler) |
 | `INTERNAL_API_PASSWORD` | — | Its password. No default — the app refuses to start without one |
-| `app.time-zone` | `Asia/Ho_Chi_Minh` | The zone every date and cron is anchored to, independent of the host's |
-| `app.ingest.price.cron` | `0 0 7 * * *` | When prices are collected |
-| `app.ingest.weather.cron` | `0 10 7 * * *` | When weather is collected |
+| `APP_MLSERVICE_TOKEN` | — | Sent as `X-Internal-Token` to the ML service; must equal its `ML_SERVICE_TOKEN`. No default |
+| `APP_MLSERVICE_BASEURL` (`app.ml-service.base-url`) | `http://localhost:8000` | Where the ML service listens |
+| `APP_CORS_ALLOWED_ORIGINS` (`app.cors.allowed-origins`) | `http://localhost:3000` | Origins allowed to call `/api/**` |
+| `app.time-zone` | `Asia/Ho_Chi_Minh` | The zone every date is anchored to, independent of the host's |
 | `app.ingest.run-on-startup` | `false` | Collect once at boot, for local runs |
 | `app.ingest.staleness-threshold` | `PT26H` | How long a job may go quiet before health reports `STALE` |
-| `app.ml-service.base-url` | `http://localhost:8000` | Where the ML service listens |
-| `app.forecast.refresh-cron` | `0 15 8 * * *` | When forecasts are regenerated |
 | `app.forecast.refresh-on-startup` | `false` | Regenerate once at boot, for local runs |
-| `app.cors.allowed-origins` | `http://localhost:3000` | Origins allowed to call `/api/**` |
 | `management.endpoints.web.exposure.include` | `health,info` | Exposed actuator endpoints |
 
 ## Time
 
 Nothing in this service reads the host's clock zone. A price belongs to a
-Vietnamese trading day, so `app.time-zone` anchors the `Clock` bean and every
-scheduled cron. Containers default to UTC, where each hour before 07:00 local
-still reads as the previous date — enough to date a day's prices to yesterday
+Vietnamese trading day, so `app.time-zone` anchors the `Clock` bean that
+every "what day is it" decision reads. Containers default to UTC, where
+each hour before 07:00 local still reads as the previous date — enough to date a day's prices to yesterday
 and label yesterday's weather "Hôm nay", with nothing appearing to fail.
 
 `./mvnw test -DargLine="-Duser.timezone=UTC"` runs the suite as a container
@@ -99,7 +97,7 @@ would.
 |---|---|
 | `GET /api/**` | Anyone. Read-only, and the prices on it are already published by their sources. |
 | `GET /actuator/health` | Anyone, so an uptime check needs no credential — but the per-component detail only shows to an authenticated caller. |
-| `/internal/**` | The `INTERNAL` role only, over HTTP Basic. This is the ML service's training-data pull, which returns the whole price series in one request. |
+| `/internal/**` | The `INTERNAL` role only, over HTTP Basic: the training CLI's price-history pull (the whole series in one request) and the daily job triggers called by GitHub Actions. |
 | anything else | Closed. |
 
 There are no user accounts and no mutating endpoints; the single credential is
