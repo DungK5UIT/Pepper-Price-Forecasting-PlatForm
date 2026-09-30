@@ -47,6 +47,7 @@ sequenceDiagram
     participant ML as ML service
     participant DB as PostgreSQL
     GA->>BE: GET /actuator/health (retry until awake)
+    GA->>ML: GET /health (retry until awake)
     GA->>BE: POST /internal/v1/jobs/ingest-price
     BE->>SRC: fetch giacaphe.com + giatieu.com
     BE->>DB: upsert market_price, append ingestion_run
@@ -156,7 +157,7 @@ the last 26 hours.
 |---|---|---|
 | FR-29 | Append every collection attempt to `ingestion_run`: job, status (`success`/`partial`/`failed`), rows written, detail, start and finish time. | `IngestionRunStore` |
 | FR-30 | Report an `ingestion` health component that is `STALE` when a job has had no non-failed run within 26 hours, while keeping HTTP 200. | `IngestionHealthIndicator` |
-| FR-31 | Run the daily cycle at 07:00 VN (00:00 UTC) from GitHub Actions — wake the backend, then prices → weather → forecast in order — and allow a manual run. | `scheduled-jobs.yml` |
+| FR-31 | Run the daily cycle at 07:00 VN (00:00 UTC) from GitHub Actions — wake the backend and the ML service, then prices → weather → forecast in order, retrying the forecast refresh up to twice — and allow a manual run. | `scheduled-jobs.yml` |
 | FR-32 | Decide "today" in `Asia/Ho_Chi_Minh` everywhere, whatever the host's time zone. | `TimeConfig` |
 
 ### Website
@@ -178,7 +179,7 @@ the last 26 hours.
 | NFR-03 | A failed job or refresh fails the scheduler run | Every failure | Job endpoints return `502`/`500` on failure; forecast refresh is not in health | Met — residue in RISK-01 |
 | NFR-04 | Every outbound call has a timeout | Connect ≤ 5 s, read ≤ 60 s (*proposed*) | None configured in the backend | **Gap** — RISK-02 |
 | NFR-05 | Public API latency | p95 < 500 ms, warm (*proposed*) | Not measured | To measure |
-| NFR-06 | Cold start is absorbed by the scheduler | Backend awake ≤ 80 s | Retries 8 × 10 s; ML service is not woken | **Gap** — RISK-03 |
+| NFR-06 | Cold start is absorbed by the scheduler | Backend and ML service awake ≤ 80 s | Retries 8 × 10 s for each; refresh retried twice, 30 s apart | Met by design, not measured |
 | NFR-07 | Polite scraping | ≤ 1 request per site per day; robots.txt allows the path | 1/day; re-verified 2026-09-04 | Met |
 | NFR-08 | No default credentials; secrets never logged; Basic auth only behind TLS | Always | No defaults; hosted behind TLS | Met |
 | NFR-09 | Only a model that beats the naive baseline ships | Lower mean pinball in walk-forward backtest; 10–90 coverage near 0.80 | Naive ships: 2,146 đ pinball, 0.834 coverage (495 predictions) | Met |

@@ -23,6 +23,7 @@ on:
 
 env:
   BACKEND_URL: https://giatieuviet-backend.onrender.com
+  ML_SERVICE_URL: https://giatieuviet-ml-service.onrender.com
 
 jobs:
   run-daily-jobs:
@@ -33,6 +34,16 @@ jobs:
           curl --fail --silent --show-error \
             --retry 8 --retry-delay 10 --retry-all-errors \
             "$BACKEND_URL/actuator/health"
+
+      # The ML service sleeps too, and nothing else wakes it: the backend
+      # only calls it at the last step. Waking it now lets its cold start
+      # overlap the two ingestion steps instead of landing inside the
+      # refresh call (RISK-03). /health is open, so no credential here.
+      - name: Wake the ML service
+        run: |
+          curl --fail --silent --show-error \
+            --retry 8 --retry-delay 10 --retry-all-errors \
+            "$ML_SERVICE_URL/health"
 
       - name: Ingest today's prices
         run: |
@@ -46,8 +57,11 @@ jobs:
             -u "${{ secrets.INTERNAL_API_USER }}:${{ secrets.INTERNAL_API_PASSWORD }}" \
             -X POST "$BACKEND_URL/internal/v1/jobs/ingest-weather"
 
+      # Retried because the ML service can still be waking. Safe to repeat:
+      # a same-day refresh replaces that day's run rather than adding one.
       - name: Refresh the forecast
         run: |
           curl --fail --silent --show-error \
+            --retry 2 --retry-delay 30 --retry-all-errors \
             -u "${{ secrets.INTERNAL_API_USER }}:${{ secrets.INTERNAL_API_PASSWORD }}" \
             -X POST "$BACKEND_URL/internal/v1/jobs/refresh-forecast"
