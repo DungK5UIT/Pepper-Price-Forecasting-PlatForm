@@ -40,11 +40,13 @@ remains the single point of validation and access control.
 
 ### Java Backend (`backend/`)
 Spring Boot. The system of record and orchestrator:
-- Owns the PostgreSQL schema and all migrations (`db/migrations/`).
+- Owns the PostgreSQL schema and all migrations
+  (`backend/src/main/resources/db/migration/`, Flyway).
 - Exposes the public REST API consumed by the frontend.
 - Owns authentication/authorization.
-- Persists users, market prices, data source config, ingestion records,
-  forecasts, and job execution records.
+- Persists market prices, weather observations, forecasts, market
+  commentary and the log of collection runs. Users arrive with the first
+  user-facing feature.
 - Collects the raw data on a daily schedule: prices scraped from two
   public sites, weather read from Open-Meteo, each attempt recorded in
   `ingestion_run` (ADR-0005). Collection lives here rather than in the ML
@@ -69,7 +71,8 @@ collection sits on the Java side of that line.
 
 ### PostgreSQL
 Single relational store, owned exclusively by the Java backend. All schema
-changes go through versioned migrations in `db/migrations/`.
+changes go through versioned Flyway migrations in
+`backend/src/main/resources/db/migration/`.
 
 ### Redis (deferred)
 Not introduced yet. Candidate future uses — response caching, rate

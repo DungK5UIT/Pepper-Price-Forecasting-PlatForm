@@ -3,12 +3,10 @@
 Java + Spring Boot service. The platform's system of record and
 orchestrator.
 
-**Owns**: the public REST API, authentication/authorization, the
-PostgreSQL schema and its migrations (coordinated with
-`db/migrations/`), persistence of users/market prices/data
-sources/ingestion records/forecasts/job execution records, the daily
-collection of prices and weather, and orchestration of calls to the ML
-service's internal API.
+**Owns**: the public REST API, access control, the PostgreSQL schema and
+its Flyway migrations, persistence of prices, weather, forecasts, market
+commentary and collection runs, the daily collection of prices and weather,
+and orchestration of calls to the ML service's internal API.
 
 **Does not own**: ML computation (feature engineering, training,
 evaluation) — that's `ml-service/`'s responsibility, invoked over an

@@ -57,10 +57,11 @@ Frontend (Next.js) → Java Backend (Spring Boot) → PostgreSQL
   public API, auth, and orchestrates the ML service.
 - **ml-service/** — FastAPI. Stateless ML/data-science computation: feature
   engineering, training, evaluation, forecast generation.
-- **db/migrations/** — Versioned schema migrations.
 - **infra/** — Deployment and local-orchestration configuration.
-- **tests/** — Cross-service integration/e2e tests (unit tests live inside
-  each component).
+
+Schema migrations live with the service that owns them
+(`backend/src/main/resources/db/migration/`); tests live inside each
+component.
 
 Full detail: [`docs/architecture/overview.md`](docs/architecture/overview.md)
 and [`docs/architecture/domain-model.md`](docs/architecture/domain-model.md).

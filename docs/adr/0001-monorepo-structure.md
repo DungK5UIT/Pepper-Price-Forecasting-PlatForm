@@ -34,6 +34,24 @@ per-component repositories.
   a component needs an independent release cadence/CI pipeline that a
   monorepo makes awkward — not a permanent commitment.
 
+### Update, 2026-09-30: placeholder directories removed
+
+The first layout reserved `db/migrations/`, `scripts/` and `tests/` at the
+root. None of them ever held anything: migrations had to live inside the
+backend so Flyway loads them from the jar, no cross-service script became
+necessary, and there are no cross-service tests yet. Each held only a README
+explaining that it was empty. They are removed so a first-time reader sees
+only directories that do something:
+
+```
+frontend/  backend/  ml-service/  infra/  docs/  .github/
+```
+
+A directory comes back when something real needs it. The decision itself —
+one repository — is unchanged, and matters more now that the repository is
+also how the project is presented: one link shows every component, its
+tests, its history and the reasoning behind it.
+
 ## Alternatives Considered
 
 - **Polyrepo** (one repo per component): rejected for now — coordination
