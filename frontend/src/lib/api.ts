@@ -9,7 +9,6 @@
 import type {
   ForecastSeries,
   Granularity,
-  MarketInsight,
   PeriodStat,
   PricePoint,
   ProvinceWeather,
@@ -51,10 +50,6 @@ export function getPeriodStats(): Promise<PeriodStat[]> {
 
 export function getProvinceWeather(): Promise<ProvinceWeather[]> {
   return getJson<ProvinceWeather[]>("/api/v1/weather");
-}
-
-export function getMarketInsight(): Promise<MarketInsight> {
-  return getJson<MarketInsight>("/api/v1/market-insight");
 }
 
 function getForecastPoints(granularity: Granularity): Promise<PricePoint[]> {

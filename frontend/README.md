@@ -14,8 +14,8 @@ Two server-rendered routes, both reading the backend's public API
 (`docs/api/README.md`) through `src/lib/api.ts`:
 
 - `/` — price dashboard: today's price and week-ahead range, a
-  day/week/month forecast chart, period stats, regional prices, a compact
-  weather snapshot and the market commentary.
+  day/week/month forecast chart, period stats, regional prices and a
+  compact weather snapshot.
 - `/weather` — 7-day weather for the six pepper-growing provinces.
 
 Fetches run on the server and are cached for 5 minutes; the browser never

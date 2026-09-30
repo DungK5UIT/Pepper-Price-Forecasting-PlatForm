@@ -100,7 +100,9 @@ the source actually provides.
 
 ### `GET /api/v1/market-insight`
 
-The narrative commentary shown alongside the numbers.
+The latest narrative commentary. Not shown on the website since 2026-09-30:
+nothing generates it, and its latest row is prototype data (OQ-1 in
+[`requirements.md`](../requirements.md)).
 
 ```json
 { "text": "Giá tiêu trong nước tiếp tục…", "updatedAtLabel": "08:00, 01/09" }
