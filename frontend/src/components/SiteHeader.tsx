@@ -52,7 +52,7 @@ export function SiteHeader({ active }: { active: "/" | "/weather" }) {
 
       <div className="flex items-center gap-2 rounded-full bg-forest px-[18px] py-[10px] text-xs font-bold uppercase tracking-[0.06em] text-cream-ink">
         <span className="h-[7px] w-[7px] rounded-full bg-gold" />
-        Cập nhật 08:00 hôm nay
+        Cập nhật hằng ngày
       </div>
     </header>
   );

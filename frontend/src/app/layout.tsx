@@ -18,7 +18,7 @@ const beVietnamPro = Be_Vietnam_Pro({
 export const metadata: Metadata = {
   title: "Giá Tiêu Việt — Dự báo giá tiêu Việt Nam",
   description:
-    "Nền tảng dự báo giá tiêu Việt Nam theo ngày, tuần, tháng, kết hợp giá lịch sử, thời tiết vùng trồng và tỷ giá USD/VND.",
+    "Nền tảng dự báo giá tiêu Việt Nam theo ngày, tuần, tháng từ chuỗi giá lịch sử, kèm khoảng dao động có thể xảy ra.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -14,6 +14,11 @@ tags yet; dates are when the work landed on `main`.
 ### Changed
 - Removed the empty `db/`, `scripts/` and `tests/` root directories (ADR-0001 update).
 
+### Fixed
+- The website no longer claims the forecast uses weather or the USD/VND rate,
+  no longer shows a hard-coded "08:00" update time, and no longer calls the
+  static market commentary machine-generated (RISK-07).
+
 ## 2026-09-07 — Hosted deployment
 
 ### Added

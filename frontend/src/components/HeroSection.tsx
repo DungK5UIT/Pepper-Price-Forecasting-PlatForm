@@ -28,15 +28,15 @@ export function HeroSection({ today }: { today: TodayPrice }) {
       <div className="relative flex max-w-xl flex-col gap-7">
         <span className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.28em] text-overline">
           <span className="h-px w-10 bg-orange-bright" />
-          Cập nhật 08:00 · {today.asOfDate}
+          Giá ngày {today.asOfDate}
         </span>
         <h1 className="font-display text-[64px] leading-[0.94] font-bold tracking-[-0.03em] text-forest sm:text-[74px]">
           Giá tiêu hôm nay,
           <span className="block text-orange">rõ trong từng con số.</span>
         </h1>
         <p className="max-w-lg text-[17px] leading-[1.7] text-body">
-          Dự báo giá tiêu Việt Nam theo ngày, tuần, tháng — kết hợp giá lịch sử, thời tiết vùng
-          trồng và tỷ giá USD/VND, cập nhật mỗi sáng.
+          Dự báo giá tiêu Việt Nam theo ngày, tuần, tháng từ chuỗi giá lịch sử, kèm khoảng dao
+          động có thể xảy ra. Giá và thời tiết vùng trồng được thu thập mỗi sáng.
         </p>
         <div className="flex flex-wrap items-center gap-3.5">
           <a href="#du-bao" className="pill-btn bg-forest text-cream-ink">
