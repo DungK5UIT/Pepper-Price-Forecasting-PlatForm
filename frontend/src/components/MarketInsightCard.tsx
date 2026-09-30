@@ -16,8 +16,7 @@ export function MarketInsightCard({ insight }: { insight: MarketInsight }) {
         {insight.text}
       </p>
       <span className="relative text-xs text-cream-ink/60">
-        Nhận định được tạo tự động từ mô hình phân tích dữ liệu · Không phải khuyến nghị đầu tư ·
-        Cập nhật {insight.updatedAtLabel}
+        Không phải khuyến nghị đầu tư · Cập nhật {insight.updatedAtLabel}
       </span>
     </section>
   );

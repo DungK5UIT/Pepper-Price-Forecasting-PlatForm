@@ -50,9 +50,9 @@ export default async function WeatherPage() {
             Thời tiết vùng trồng tiêu.
           </h1>
           <p className="text-base leading-[1.7] text-body">
-            Theo dõi nhiệt độ, lượng mưa và gió tại 6 tỉnh trồng tiêu trọng điểm. Đây là một trong
-            các yếu tố đầu vào của mô hình dự báo giá — mưa lớn hoặc hạn hán kéo dài ảnh hưởng trực
-            tiếp đến sản lượng và tiến độ thu hoạch.
+            Theo dõi nhiệt độ, lượng mưa và gió tại 6 tỉnh trồng tiêu trọng điểm — mưa lớn hoặc hạn
+            hán kéo dài ảnh hưởng trực tiếp đến sản lượng và tiến độ thu hoạch. Mô hình dự báo giá
+            hiện chưa dùng dữ liệu thời tiết; nó sẽ được đưa vào khi tích lũy đủ lịch sử.
           </p>
         </section>
 
