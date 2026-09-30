@@ -1,5 +1,6 @@
 package com.giatieuviet.backend.api.error;
 
+import com.giatieuviet.backend.ingest.PriceSourcesUnavailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ProblemDetail handleIllegalArgument(IllegalArgumentException exception) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
         problem.setTitle("Invalid request");
+        return problem;
+    }
+
+    /**
+     * Every price site failed, so the day's collection stored nothing. The
+     * upstream is at fault, not the request, hence 502; the detail names each
+     * source's failure and only reaches the authenticated scheduler.
+     */
+    @ExceptionHandler(PriceSourcesUnavailableException.class)
+    public ProblemDetail handlePriceSourcesUnavailable(PriceSourcesUnavailableException exception) {
+        log.error("Price collection failed: {}", exception.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, exception.getMessage());
+        problem.setTitle("Price sources unavailable");
         return problem;
     }
 

@@ -133,3 +133,14 @@ network layer is no longer free.
   `GET /api/**`), so the actual goal is keeping ADR-0002's "only the
   backend calls this" invariant legible and enforced, not defending a
   secret worth protecting elaborately.
+
+### Update, 2026-09-30: job endpoints report failure
+
+The endpoints above no longer call the `*Quietly()` methods. Those swallowed
+every failure, so each endpoint answered `200` and the scheduled run stayed
+green on a morning when nothing was collected (RISK-01). They now call
+`ingest()`/`refresh()` directly, and `GlobalExceptionHandler` turns a failure
+into `502` (no readable price source) or `500` (anything else), which
+`curl --fail` turns into a failed run and GitHub into an email to the owner.
+The quiet methods remain for the opt-in startup runs, where a failing website
+should not stop the backend from booting.

@@ -2,9 +2,11 @@ package com.giatieuviet.backend.internal;
 
 import com.giatieuviet.backend.forecast.ForecastRefreshService;
 import com.giatieuviet.backend.ingest.PriceIngestionService;
+import com.giatieuviet.backend.ingest.PriceSourcesUnavailableException;
 import com.giatieuviet.backend.ingest.WeatherIngestionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -39,7 +41,7 @@ class JobTriggerControllerTest {
 
     @Test
     void ingestPriceReportsRowsWritten() {
-        given(priceIngestionService.ingestQuietly()).willReturn(7);
+        given(priceIngestionService.ingest()).willReturn(7);
 
         assertThat(mvc.post().uri("/internal/v1/jobs/ingest-price"))
                 .hasStatusOk()
@@ -49,7 +51,7 @@ class JobTriggerControllerTest {
 
     @Test
     void ingestWeatherReportsRowsWritten() {
-        given(weatherIngestionService.ingestQuietly()).willReturn(6);
+        given(weatherIngestionService.ingest()).willReturn(6);
 
         assertThat(mvc.post().uri("/internal/v1/jobs/ingest-weather"))
                 .hasStatusOk()
@@ -64,6 +66,34 @@ class JobTriggerControllerTest {
                 .bodyJson()
                 .extractingPath("$.triggered").isEqualTo(true);
 
-        verify(forecastRefreshService).refreshQuietly();
+        verify(forecastRefreshService).refresh();
+    }
+
+    // TC-67: the scheduler runs curl --fail, so only a non-2xx status turns
+    // its run red and gets the owner an email.
+
+    @Test
+    void aPriceRunWithNoReadableSourceIsABadGateway() {
+        given(priceIngestionService.ingest()).willThrow(
+                new PriceSourcesUnavailableException("primary: connection refused; backup: layout changed"));
+
+        assertThat(mvc.post().uri("/internal/v1/jobs/ingest-price"))
+                .hasStatus(HttpStatus.BAD_GATEWAY)
+                .bodyJson()
+                .extractingPath("$.detail").asString().contains("connection refused");
+    }
+
+    @Test
+    void aFailedWeatherRunIsNotReportedAsSuccess() {
+        given(weatherIngestionService.ingest()).willThrow(new IllegalStateException("Open-Meteo unreachable"));
+
+        assertThat(mvc.post().uri("/internal/v1/jobs/ingest-weather")).hasStatus5xxServerError();
+    }
+
+    @Test
+    void aFailedForecastRefreshIsNotReportedAsSuccess() {
+        given(forecastRefreshService.refresh()).willThrow(new IllegalStateException("ML service unreachable"));
+
+        assertThat(mvc.post().uri("/internal/v1/jobs/refresh-forecast")).hasStatus5xxServerError();
     }
 }
