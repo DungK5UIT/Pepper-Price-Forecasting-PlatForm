@@ -36,7 +36,10 @@ Older rows are historical imports, distinguishable by `source`:
 | `giacaphe.com/...`, `giatieu.com/...` | 2026-08-08 onward, daily | Actually observed, collected by this platform. |
 
 `forecast` is written by the refresh that calls the ML service;
-`market_insight` is still prototype data, with nothing generating it yet.
+`market_insight` is still prototype data, with nothing generating it yet;
+its latest row (2026-09-01) is the prototype's AI call failing with an
+invalid API key, stored as if it were commentary. The website no longer
+shows this table (OQ-1).
 
 ## Hosting
 

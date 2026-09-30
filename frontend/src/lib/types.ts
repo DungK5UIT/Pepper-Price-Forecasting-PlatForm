@@ -34,11 +34,6 @@ export interface PeriodStat {
   changeVnd: number;
 }
 
-export interface MarketInsight {
-  text: string;
-  updatedAtLabel: string;
-}
-
 export type WeatherCondition = "sun" | "cloud" | "cloud-sun" | "cloud-rain" | "wind";
 
 export interface WeatherDay {

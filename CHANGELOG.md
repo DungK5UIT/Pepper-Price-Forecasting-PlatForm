@@ -18,6 +18,8 @@ tags yet; dates are when the work landed on `main`.
 - The website no longer claims the forecast uses weather or the USD/VND rate,
   no longer shows a hard-coded "08:00" update time, and no longer calls the
   static market commentary machine-generated (RISK-07).
+- The dashboard no longer shows the market commentary: its latest row was
+  the prototype's stored AI error message (OQ-1).
 
 ## 2026-09-07 — Hosted deployment
 

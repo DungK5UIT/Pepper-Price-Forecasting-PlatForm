@@ -5,10 +5,8 @@ import { PhotoBand } from "@/components/PhotoBand";
 import { ForecastSection } from "@/components/ForecastSection";
 import { RegionPriceTable } from "@/components/RegionPriceTable";
 import { WeatherSnapshot } from "@/components/WeatherSnapshot";
-import { MarketInsightCard } from "@/components/MarketInsightCard";
 import {
   getForecastSeries,
-  getMarketInsight,
   getPeriodStats,
   getProvinceWeather,
   getRegionPrices,
@@ -27,13 +25,12 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [today, series, stats, regions, provinces, insight] = await Promise.all([
+  const [today, series, stats, regions, provinces] = await Promise.all([
     getTodayPrice(),
     getForecastSeries(),
     getPeriodStats(),
     getRegionPrices(),
     getProvinceWeather(),
-    getMarketInsight(),
   ]);
 
   return (
@@ -47,7 +44,6 @@ export default async function DashboardPage() {
           <RegionPriceTable regions={regions} />
           <WeatherSnapshot provinces={provinces} />
         </section>
-        <MarketInsightCard insight={insight} />
       </main>
       <SiteFooter />
     </>

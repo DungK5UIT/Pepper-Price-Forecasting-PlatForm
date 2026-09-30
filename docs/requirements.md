@@ -164,7 +164,7 @@ the last 26 hours.
 
 | ID | The system shall… | Source |
 |---|---|---|
-| FR-33 | `/`: show the headline price and change, the week-ahead range, a forecast chart with a day/week/month switch, period stats, the regional table, a weather snapshot and the market commentary. | `app/page.tsx` |
+| FR-33 | `/`: show the headline price and change, the week-ahead range, a forecast chart with a day/week/month switch, period stats, the regional table and a weather snapshot. | `app/page.tsx` |
 | FR-34 | `/weather`: show 7-day cards for the six provinces, marking forecast days. | `app/weather/page.tsx` |
 | FR-35 | Read data only from the backend's public API, server-side, cached for 300 s; show an error page with a reload button when the backend fails. | `lib/api.ts`, `app/error.tsx` |
 
@@ -226,7 +226,7 @@ prototype. See [`database/README.md`](database/README.md).
 
 | # | Question | Why it matters |
 |---|---|---|
-| OQ-1 | Who writes the market commentary? Nothing generates it; the rows are prototype data. Keep, generate, or remove? | The dashboard presents old text as current (RISK-07) |
+| OQ-1 | Who writes the market commentary? Nothing generates it; the rows are prototype data. Keep, generate, or remove? | **Interim decision 2026-09-30:** hidden from the website — the latest row (01/09) was the prototype's stored AI error message, served to the public. `GET /market-insight` stays until generate-or-remove is decided. |
 | OQ-2 | Where should a failed job alert go (email, GitHub issue, chat)? | NFR-03 has no receiver |
 | OQ-3 | Agree the proposed targets in NFR-04, NFR-05, NFR-12 | They cannot be tested until agreed |
 | OQ-4 | "Change vs yesterday" — previous observation or previous calendar day? | They differ after a missed day |
