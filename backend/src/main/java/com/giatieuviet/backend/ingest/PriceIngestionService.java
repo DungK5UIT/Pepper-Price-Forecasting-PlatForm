@@ -81,6 +81,11 @@ public class PriceIngestionService {
         }
     }
 
+    /**
+     * @return how many rows were written — inserted or corrected
+     * @throws PriceSourcesUnavailableException when no source could be read;
+     *         the run is logged as failed before it is thrown
+     */
     public int ingest() {
         Instant startedAt = Instant.now();
         List<Reading> readings = new ArrayList<>();
@@ -96,9 +101,8 @@ public class PriceIngestionService {
 
         if (readings.isEmpty()) {
             String detail = String.join("; ", failures);
-            log.error("No price source could be read: {}", detail);
             runStore.record(JOB_NAME, IngestionRun.FAILED, 0, detail, startedAt);
-            return 0;
+            throw new PriceSourcesUnavailableException(detail);
         }
 
         Reading used = readings.get(0);

@@ -18,6 +18,10 @@ import java.util.Map;
  *
  * Covered by {@code SecurityConfig}'s existing {@code /internal/**} rule —
  * no separate auth wiring here.
+ *
+ * Calls the services' throwing methods, not their {@code *Quietly()}
+ * variants: the scheduler learns about a failed job only from a non-2xx
+ * status, which {@code GlobalExceptionHandler} produces from the exception.
  */
 @RestController
 @RequestMapping("/internal/v1/jobs")
@@ -37,23 +41,17 @@ public class JobTriggerController {
 
     @PostMapping("/ingest-price")
     public Map<String, Integer> ingestPrice() {
-        return Map.of("rowsWritten", priceIngestionService.ingestQuietly());
+        return Map.of("rowsWritten", priceIngestionService.ingest());
     }
 
     @PostMapping("/ingest-weather")
     public Map<String, Integer> ingestWeather() {
-        return Map.of("rowsWritten", weatherIngestionService.ingestQuietly());
+        return Map.of("rowsWritten", weatherIngestionService.ingest());
     }
 
-    /**
-     * No row count here: {@code refreshQuietly()} returns {@code void},
-     * since a failed refresh keeps serving the previous run rather than
-     * reporting a count of nothing changed. The caller only needs to know
-     * the call landed.
-     */
     @PostMapping("/refresh-forecast")
     public Map<String, Boolean> refreshForecast() {
-        forecastRefreshService.refreshQuietly();
+        forecastRefreshService.refresh();
         return Map.of("triggered", true);
     }
 }

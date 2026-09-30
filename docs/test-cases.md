@@ -8,16 +8,16 @@ Each test case (`TC-xx`) verifies one requirement (`FR-xx` / `NFR-xx`). The
 **Test** column names the real test method; **Missing** means the case is
 specified here but no test exists yet — these are the next tests to write.
 
-**Status on 2026-09-30:** backend 55 tests pass (last local run 2026-09-07),
+**Status on 2026-09-30:** backend 58 tests pass (local run 2026-09-30),
 ML service 21 pass. Coverage: ML service 67% statements + branches
 (`train.py` 0%, naive strategy untested); backend not measured yet (no
 JaCoCo). Frontend has lint and build in CI, no tests.
 
 | Status | Count |
 |---|---|
-| Covered | 43 |
+| Covered | 44 |
 | Partial — shape or one path only | 7 |
-| Missing | 23 |
+| Missing | 22 |
 | **Total** | **73** |
 
 ## How to run
@@ -73,7 +73,7 @@ codes, not the numbers. The calculations in `DatabasePriceService` and
 | TC-26 | FR-11 national = mean of regions | `PriceSourceParsingTest › averagesTheRegionsIntoTheNationalFigure` | U | Covered |
 | TC-27 | FR-11 re-run corrects rows, no duplicates | `PriceIngestionServiceTest › rerunningTheSameDayCorrectsTheRowsRatherThanDuplicatingThem` | I | Covered |
 | TC-28 | FR-12 no source → `failed` run, nothing stored | `PriceIngestionServiceTest › recordsAFailedRunAndStoresNothingWhenNoSourceCanBeRead` | I | Covered |
-| TC-29 | FR-12 failure does not reach the caller | `PriceIngestionServiceTest › aBrokenCollectionDoesNotPropagateToTheCaller` | I | Covered |
+| TC-29 | FR-12 a collection run at startup does not fail the boot | `PriceIngestionServiceTest › aBrokenCollectionDoesNotPropagateToTheCaller` | I | Covered |
 | TC-30 | FR-13 UTF-8 decoding of a response without charset | — | U | Missing |
 
 ## Weather collection
@@ -136,7 +136,7 @@ codes, not the numbers. The calculations in `DatabasePriceService` and
 | TC-64 | FR-31 job endpoints trigger the services | `JobTriggerControllerTest` (3 tests) | S | Covered |
 | TC-65 | FR-31 scheduled run order and wake-up | Manual: run the workflow with *Run workflow* and read its log | M | Covered — manual |
 | TC-66 | FR-32 trading day pinned to Vietnam, not the host | `TimeConfigTest` (3 tests) | U | Covered |
-| TC-67 | NFR-03 a failed job returns non-2xx so the scheduler run fails | — | S | Missing — behaviour is the opposite today |
+| TC-67 | NFR-03 a failed job returns non-2xx so the scheduler run fails | `JobTriggerControllerTest › aPriceRunWithNoReadableSourceIsABadGateway`, `› aFailedWeatherRunIsNotReportedAsSuccess`, `› aFailedForecastRefreshIsNotReportedAsSuccess` | S | Covered |
 | TC-68 | NFR-04 outbound call times out instead of hanging | — | I | Missing |
 | TC-69 | NFR-09 shipped model beats or equals the baseline | Evidence: `ml-service/ml_service/artifacts/metrics.json` | M | Covered — manual |
 
@@ -153,7 +153,7 @@ codes, not the numbers. The calculations in `DatabasePriceService` and
 
 In order of risk (see [`risks.md`](risks.md)):
 
-1. TC-67, TC-68 — together with the fixes for RISK-01 and RISK-02.
+1. TC-68 — together with the fix for RISK-02.
 2. TC-02, TC-03, TC-05, TC-08, TC-09, TC-11, TC-14 — the calculations the
    public sees, now untested; add JaCoCo to measure C0/C1.
 3. TC-47, TC-48 with the naive model, TC-53 — the model that actually ships.

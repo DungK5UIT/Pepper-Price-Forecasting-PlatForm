@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Exercises collection against the in-memory database with the websites
@@ -148,11 +149,14 @@ class PriceIngestionServiceTest {
 
     @Test
     void recordsAFailedRunAndStoresNothingWhenNoSourceCanBeRead() {
-        int written = serviceReading(
+        PriceIngestionService service = serviceReading(
                 broken("primary", "connection refused"),
-                broken("backup", "layout changed")).ingest();
+                broken("backup", "layout changed"));
 
-        assertThat(written).isZero();
+        assertThatThrownBy(service::ingest)
+                .isInstanceOf(PriceSourcesUnavailableException.class)
+                .hasMessageContaining("connection refused")
+                .hasMessageContaining("layout changed");
         assertThat(marketPrices.findAll()).isEmpty();
         assertThat(lastRun().getStatus()).isEqualTo(IngestionRun.FAILED);
         assertThat(lastRun().getDetail()).contains("connection refused").contains("layout changed");

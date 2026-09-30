@@ -112,7 +112,7 @@ the last 26 hours.
 | FR-09 | Refuse a page with no recognisable price rows, or with any price outside 10,000–1,000,000 VND/kg, as a layout change. | `HtmlPriceSource` |
 | FR-10 | Store the first readable source. Mark the run `partial` when it fell back, when the two sources are dated differently, or when their national averages differ by more than 5%. | `PriceIngestionService` |
 | FR-11 | Store each region's price plus a `national` price (mean of the regions, 2 d.p.) for the page's date, idempotently on (commodity, region, date); the source is recorded as provenance, not identity. | `MarketPriceStore` |
-| FR-12 | When no source can be read: record a `failed` run, store nothing, keep serving the previous data. | `PriceIngestionService` |
+| FR-12 | When no source can be read: record a `failed` run, store nothing, keep serving the previous data, and answer the scheduler's trigger with `502` (NFR-03). | `PriceIngestionService` |
 | FR-13 | Decode pages as UTF-8 whatever the `Content-Type` says, and identify itself with a User-Agent naming the project. | `HtmlPriceSource` |
 
 ### Weather collection
@@ -175,7 +175,7 @@ the last 26 hours.
 |---|---|---|---|---|
 | NFR-01 | Freshness: the trading day's price and weather are stored early in the morning | By 07:30 VN | Job starts 07:00; GitHub schedules can start late | Met by design, not measured |
 | NFR-02 | A missed collection is visible | Within 26 h | `STALE` after 26 h | Met |
-| NFR-03 | A failed job or refresh fails the scheduler run | Every failure | Job endpoints return `200` on failure; forecast refresh is not in health | **Gap** — RISK-01 |
+| NFR-03 | A failed job or refresh fails the scheduler run | Every failure | Job endpoints return `502`/`500` on failure; forecast refresh is not in health | Met — residue in RISK-01 |
 | NFR-04 | Every outbound call has a timeout | Connect ≤ 5 s, read ≤ 60 s (*proposed*) | None configured in the backend | **Gap** — RISK-02 |
 | NFR-05 | Public API latency | p95 < 500 ms, warm (*proposed*) | Not measured | To measure |
 | NFR-06 | Cold start is absorbed by the scheduler | Backend awake ≤ 80 s | Retries 8 × 10 s; ML service is not woken | **Gap** — RISK-03 |
