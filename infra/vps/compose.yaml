@@ -31,6 +31,8 @@ services:
       APP_MLSERVICE_BASEURL: http://ml-service:8000
       APP_CORS_ALLOWED_ORIGINS: https://giatieuviet.vercel.app
       JAVA_OPTS: -XX:MaxRAMPercentage=70 -XX:+ExitOnOutOfMemoryError -XX:+UseSerialGC -Xss512k
+    ports:
+      - "127.0.0.1:8080:8080"
     mem_limit: 640m
     depends_on:
       - ml-service
