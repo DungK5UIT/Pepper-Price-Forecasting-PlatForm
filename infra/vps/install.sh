@@ -37,7 +37,13 @@ n=$(grep -cE '^[A-Z_]+=.+' .env || true)
 nice -n 10 docker compose --env-file .env up -d --build
 docker image prune -f >/dev/null
 chmod +x jobs.sh
-echo "0 0 * * * root $(pwd)/jobs.sh >> /var/log/giatieuviet-jobs.log 2>&1" > /etc/cron.d/giatieuviet
+chmod +x autodeploy.sh
+cat > /etc/cron.d/giatieuviet <<CRON
+# 00:00 UTC = 07:00 VN: daily price/weather/forecast jobs
+0 0 * * * root $(pwd)/jobs.sh >> /var/log/giatieuviet-jobs.log 2>&1
+# 20:00 UTC = 03:00 VN: redeploy if main moved and CI is green
+0 20 * * * root $(pwd)/autodeploy.sh >> /var/log/giatieuviet-deploy.log 2>&1
+CRON
 echo
 echo "Waiting for the backend..."
 for i in $(seq 1 40); do
