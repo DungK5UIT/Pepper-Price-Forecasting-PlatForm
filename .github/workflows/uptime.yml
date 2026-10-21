@@ -1,0 +1,73 @@
+name: Uptime
+
+# The VPS host can stop the VM without notice, and the CloudCode (Convoy)
+# panel offers no user API token, so nothing outside can press Start.
+# This only watches: every 30 min it calls the backend through ngrok. When it
+# is down it opens an issue labelled vps-down (GitHub emails the owner);
+# when it comes back the issue is closed. Fix: panel -> Start.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+concurrency: uptime
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check backend health
+        id: health
+        run: |
+          url=https://outlook-gopher-undergrad.ngrok-free.dev/actuator/health
+          for i in 1 2 3; do
+            body=$(curl -s --max-time 20 -H 'ngrok-skip-browser-warning: 1' "$url" || true)
+            case "$body" in *'"status":'*) break ;; esac
+            sleep 30
+          done
+          echo "body: $body"
+          case "$body" in
+            *'"status":'*) echo "up=true" >> "$GITHUB_OUTPUT" ;;
+            *)             echo "up=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+          printf 'body<<EOF\n%s\nEOF\n' "${body:0:500}" >> "$GITHUB_OUTPUT"
+
+      - name: Open or close the vps-down issue
+        uses: actions/github-script@v7
+        env:
+          UP: ${{ steps.health.outputs.up }}
+          BODY: ${{ steps.health.outputs.body }}
+        with:
+          script: |
+            const up = process.env.UP === 'true';
+            const { owner, repo } = context.repo;
+            const open = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: 'vps-down', per_page: 1 });
+            const issue = open.data[0];
+            const now = new Date().toISOString();
+            if (!up && !issue) {
+              await github.rest.issues.create({ owner, repo,
+                title: `VPS / backend down (${now})`,
+                labels: ['vps-down'],
+                assignees: [owner],
+                body: [
+                  'The backend did not answer through ngrok after 3 tries.',
+                  '',
+                  'Fix: open https://vps.clooud.codes/servers/990ecfa3 and press **Start**.',
+                  'Containers and the bot restart by themselves; catchup.sh reruns',
+                  'the daily jobs if they were missed. This issue closes automatically.',
+                  '',
+                  '```', process.env.BODY || '(no response)', '```',
+                ].join('\n') });
+            } else if (up && issue) {
+              await github.rest.issues.createComment({ owner, repo,
+                issue_number: issue.number, body: `Back up at ${now}.` });
+              await github.rest.issues.update({ owner, repo,
+                issue_number: issue.number, state: 'closed' });
+            }
+            core.info(up ? 'up' : 'down');
