@@ -1,8 +1,10 @@
+import Image from "next/image";
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { WeatherProvinceCard } from "@/components/WeatherProvinceCard";
 import { getProvinceWeather } from "@/lib/api";
+import hillsBanner from "@/assets/images/hills-banner.jpg";
 
 export const metadata: Metadata = {
   title: "Thời tiết vùng trồng tiêu — Giá Tiêu Việt",
@@ -26,26 +28,44 @@ export default async function WeatherPage() {
   return (
     <>
       <SiteHeader active="/weather" />
-      <main className="page-container flex flex-col gap-6 py-8 sm:py-10">
-        <div className="flex flex-col gap-1.5">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Thời tiết vùng trồng tiêu</h1>
-          <p className="max-w-2xl text-sm leading-relaxed text-muted">
+      <main className="flex flex-col gap-9 px-16 py-14">
+        <div className="relative h-55 overflow-hidden rounded-[32px_32px_128px_32px]">
+          <Image
+            src={hillsBanner}
+            alt="Vùng trồng tiêu Tây Nguyên"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-linear-to-b from-forest-deep/5 from-55% to-forest-deep/60" />
+        </div>
+
+        <section className="flex max-w-3xl flex-col gap-3.5">
+          <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.28em] text-overline">
+            <span className="h-px w-10 bg-orange-bright" />
+            Vùng trồng trọng điểm
+          </span>
+          <h1 className="font-display text-[56px] leading-[0.96] font-bold tracking-[-0.02em] text-forest">
+            Thời tiết vùng trồng tiêu.
+          </h1>
+          <p className="text-base leading-[1.7] text-body">
             Theo dõi nhiệt độ, lượng mưa và gió tại 6 tỉnh trồng tiêu trọng điểm — mưa lớn hoặc hạn
             hán kéo dài ảnh hưởng trực tiếp đến sản lượng và tiến độ thu hoạch. Mô hình dự báo giá
             hiện chưa dùng dữ liệu thời tiết; nó sẽ được đưa vào khi tích lũy đủ lịch sử.
           </p>
-        </div>
+        </section>
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {provinces.map((weather) => (
             <WeatherProvinceCard key={weather.province} weather={weather} />
           ))}
         </section>
 
-        <p className="flex items-center gap-2 text-xs text-muted">
-          <span className="rounded bg-subtle px-1.5 py-0.5 text-[11px]">Dự báo</span>
-          Ngày chưa có số liệu quan trắc thực tế.
-        </p>
+        <div className="flex items-center gap-2.5 text-xs text-muted">
+          <span className="rounded-full bg-cream-alt px-2 py-0.5 text-muted">DB</span>
+          Dự báo — ngày chưa có số liệu quan trắc thực tế
+        </div>
       </main>
       <SiteFooter />
     </>
