@@ -8,56 +8,51 @@ const NAV_LINKS = [
 
 export function SiteHeader({ active }: { active: "/" | "/weather" }) {
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-canvas/85 backdrop-blur">
-      <div className="page-container flex h-14 items-center justify-between gap-4">
-        <div className="flex items-center gap-6 sm:gap-8">
-          <Link href="/" className="flex items-center gap-2.5" aria-label="Giá Tiêu Việt — trang chủ">
-            <svg width="26" height="26" viewBox="0 0 40 40" fill="none" aria-hidden>
-              <rect width="40" height="40" rx="10" fill="var(--color-ink)" />
-              <path
-                d="M20 30V14M20 14C20 14 14 15 13 21C13 21 18 22 20 18M20 14C20 14 26 15 27 21C27 21 22 22 20 18"
-                stroke="var(--color-canvas)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="text-sm font-semibold tracking-tight">Giá Tiêu Việt</span>
-          </Link>
+    <header className="flex items-center justify-between border-b border-forest/15 px-16 py-6">
+      <Link href="/" className="flex items-center gap-3">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="20" fill="var(--color-forest)" />
+          <path
+            d="M20 30V14M20 14C20 14 14 15 13 21C13 21 18 22 20 18M20 14C20 14 26 15 27 21C27 21 22 22 20 18"
+            stroke="var(--color-cream-ink)"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="flex flex-col leading-tight">
+          <span className="font-display text-[21px] font-bold text-forest">Giá Tiêu Việt</span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-body">
+            Nền tảng dự báo giá tiêu
+          </span>
+        </span>
+      </Link>
 
-          <nav className="flex items-center gap-1" aria-label="Điều hướng chính">
-            {NAV_LINKS.map((link) =>
-              link.implemented ? (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  aria-current={link.href === active ? "page" : undefined}
-                  className={
-                    "rounded-md px-2.5 py-1.5 text-sm transition-colors " +
-                    (link.href === active
-                      ? "bg-subtle font-medium text-ink"
-                      : "text-muted hover:bg-subtle hover:text-ink")
-                  }
-                >
-                  {link.label}
-                </Link>
-              ) : (
-                <span
-                  key={link.href}
-                  className="hidden cursor-not-allowed rounded-md px-2.5 py-1.5 text-sm text-muted/60 sm:inline"
-                  title="Sắp ra mắt"
-                >
-                  {link.label}
-                </span>
-              ),
-            )}
-          </nav>
-        </div>
+      <nav className="flex items-center gap-10">
+        {NAV_LINKS.map((link) =>
+          link.implemented ? (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={
+                link.href === active
+                  ? "text-sm font-bold text-forest"
+                  : "text-sm font-medium text-body hover:text-forest"
+              }
+            >
+              {link.label}
+            </Link>
+          ) : (
+            <span key={link.href} className="text-sm font-medium text-body/50" title="Sắp ra mắt">
+              {link.label}
+            </span>
+          ),
+        )}
+      </nav>
 
-        <div className="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs text-muted sm:flex">
-          <span className="h-1.5 w-1.5 rounded-full bg-positive" aria-hidden />
-          Cập nhật hằng ngày
-        </div>
+      <div className="flex items-center gap-2 rounded-full bg-forest px-[18px] py-[10px] text-xs font-bold uppercase tracking-[0.06em] text-cream-ink">
+        <span className="h-[7px] w-[7px] rounded-full bg-gold" />
+        Cập nhật hằng ngày
       </div>
     </header>
   );
