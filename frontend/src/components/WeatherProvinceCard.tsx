@@ -1,65 +1,81 @@
 import type { ProvinceWeather } from "@/lib/types";
 import { WeatherConditionIcon } from "./icons";
 
-function HillsBanner() {
-  return (
-    <svg viewBox="0 0 400 60" width="100%" height="56" preserveAspectRatio="none" className="block">
-      <rect width="400" height="60" fill="#eff5f0" />
-      <circle cx="358" cy="18" r="10" fill="var(--color-gold)" fillOpacity={0.7} />
-      <path
-        d="M0 46C50 34 100 44 150 37C200 30 250 44 300 37C340 31 370 40 400 34V60H0Z"
-        fill="#cfe0d2"
-      />
-      <path
-        d="M0 56C50 48 100 54 150 49C200 44 250 54 300 49C340 45 370 51 400 47V60H0Z"
-        fill="var(--color-forest)"
-        fillOpacity={0.9}
-      />
-    </svg>
-  );
-}
+/** Rain below this still gets a visible sliver; above it bars scale to the week's wettest day. */
+const MIN_RAIN_SCALE_MM = 10;
 
 export function WeatherProvinceCard({ weather }: { weather: ProvinceWeather }) {
   const today = weather.days[0];
+  const rainScale = Math.max(MIN_RAIN_SCALE_MM, ...weather.days.map((d) => d.rainMm));
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-3xl border border-border bg-card">
-      <HillsBanner />
-      <div className="flex flex-col gap-4.5 px-7 py-5.5">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col gap-0.5">
-            <span className="font-display text-[19px] font-semibold text-forest">{weather.province}</span>
-            <span className="text-xs text-muted">Hôm nay</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <WeatherConditionIcon condition={today.condition} width={26} height={26} className="text-forest" />
-            <span className="font-display text-[26px] font-semibold text-forest">{Math.round(today.tempC)}°C</span>
-          </div>
+    <div className="card overflow-hidden">
+      <div className="flex items-center justify-between border-b border-line px-5 py-4">
+        <div className="flex flex-col gap-0.5">
+          <h2 className="text-sm font-semibold tracking-tight">{weather.province}</h2>
+          <span className="text-xs text-muted">Hôm nay</span>
         </div>
-        <div className="h-px bg-cream-alt" />
-        <div>
-          {weather.days.map((day, i) => (
-            <div
-              key={day.label + i}
-              className="grid grid-cols-[64px_22px_1fr_auto_44px] items-center gap-2.5 border-b border-cream-alt py-2.25 last:border-none"
-            >
-              <span className="text-xs font-bold text-forest">{day.label}</span>
-              <WeatherConditionIcon condition={day.condition} width={18} height={18} className="text-body" />
-              <span className="text-xs text-body">
-                {Math.round(day.tempC)}°C
-              </span>
-              <span className="justify-self-end text-xs text-rain">{day.rainMm}mm</span>
-              {day.isForecast ? (
-                <span className="justify-self-end rounded-full bg-cream-alt px-1.75 py-0.5 text-[10px] text-muted">
-                  DB
-                </span>
-              ) : (
-                <span />
-              )}
-            </div>
-          ))}
+        <div className="flex items-center gap-2.5">
+          <WeatherConditionIcon
+            condition={today.condition}
+            width={22}
+            height={22}
+            className="text-muted"
+            aria-hidden
+          />
+          <span className="text-2xl font-semibold tracking-tight tabular-nums">
+            {Math.round(today.tempC)}°C
+          </span>
         </div>
       </div>
+
+      <table className="w-full text-xs">
+        <caption className="sr-only">Thời tiết 7 ngày tại {weather.province}</caption>
+        <thead className="sr-only">
+          <tr>
+            <th scope="col">Ngày</th>
+            <th scope="col">Nhiệt độ</th>
+            <th scope="col">Lượng mưa</th>
+            <th scope="col">Loại số liệu</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-line">
+          {weather.days.map((day, i) => (
+            <tr key={day.label + i}>
+              <th scope="row" className="w-20 whitespace-nowrap py-2.5 pl-5 text-left font-medium">
+                {day.label}
+              </th>
+              <td className="py-2.5">
+                <span className="flex items-center gap-2 tabular-nums text-body">
+                  <WeatherConditionIcon
+                    condition={day.condition}
+                    width={16}
+                    height={16}
+                    className="text-muted"
+                    aria-hidden
+                  />
+                  {Math.round(day.tempC)}°C
+                </span>
+              </td>
+              <td className="py-2.5 pl-2">
+                <span className="flex items-center justify-end gap-2 tabular-nums text-rain">
+                  <span
+                    className="h-1.5 rounded-full bg-rain/30"
+                    style={{ width: `${Math.max(day.rainMm > 0 ? 4 : 0, (day.rainMm / rainScale) * 48)}px` }}
+                    aria-hidden
+                  />
+                  {day.rainMm} mm
+                </span>
+              </td>
+              <td className="py-2.5 pr-5 pl-2 text-right whitespace-nowrap">
+                {day.isForecast && (
+                  <span className="whitespace-nowrap rounded bg-subtle px-1.5 py-0.5 text-[11px] text-muted">Dự báo</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
